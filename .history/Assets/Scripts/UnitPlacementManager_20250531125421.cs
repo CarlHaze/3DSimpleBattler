@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class UnitPlacementManager : MonoBehaviour
 {
@@ -30,10 +30,8 @@ public class UnitPlacementManager : MonoBehaviour
     private Dictionary<string, bool> tileOccupation = new Dictionary<string, bool>();
     private Dictionary<string, GameObject> tileUnits = new Dictionary<string, GameObject>();
     
-    // Integration with other systems
     private SimpleUnitSelector unitSelector;
-    private SimpleHeightCheck heightChecker;
-    
+
     void Start()
     {
         gridManager = FindFirstObjectByType<GridOverlayManager>();
@@ -51,12 +49,10 @@ public class UnitPlacementManager : MonoBehaviour
         {
             CreateDefaultHighlight();
         }
+
+        unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
         
         InitializeTileSystem();
-        
-        // Find other systems
-        unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
-        heightChecker = FindFirstObjectByType<SimpleHeightCheck>();
     }
     
     void InitializeTileSystem()
@@ -99,7 +95,7 @@ public class UnitPlacementManager : MonoBehaviour
         return $"{groundObj.GetInstanceID()}_{gridPos.x}_{gridPos.y}";
     }
     
-    public bool IsTileOccupied(GameObject groundObj, Vector2Int gridPos)
+    bool IsTileOccupied(GameObject groundObj, Vector2Int gridPos)
     {
         string tileKey = GetTileKey(groundObj, gridPos);
         
@@ -255,8 +251,7 @@ public class UnitPlacementManager : MonoBehaviour
         bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
         bool isOccupied = IsTileOccupied(groundObj, gridPos);
         bool isObstructed = IsPositionObstructed(gridPos, groundObj);
-        bool isReachable = heightChecker != null ? heightChecker.IsPositionReachable(gridPos, groundObj) : true;
-        bool isValid = isValidPosition && !isOccupied && !isObstructed && isReachable;
+        bool isValid = isValidPosition && !isOccupied && !isObstructed;
         
         Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
         ShowHighlight(worldPos, isValid);
@@ -292,56 +287,52 @@ public class UnitPlacementManager : MonoBehaviour
     }
     
     void AttemptUnitPlacement()
+{
+    if (currentGroundObject == null) return;
+    
+    // Check if we can place more units
+    if (unitSelector != null && !unitSelector.CanPlaceMoreUnits())
     {
-        if (currentGroundObject == null) return;
+        Debug.Log($"Cannot place more units! Limit reached: {unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()}");
+        return;
+    }
+    
+    Vector2Int gridPos = currentGridPos;
+    GameObject groundObj = currentGroundObject;
+    
+    bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
+    bool isOccupied = IsTileOccupied(groundObj, gridPos);
+    bool isObstructed = IsPositionObstructed(gridPos, groundObj);
+    
+    Debug.Log($"Placement check - Valid: {isValidPosition}, Occupied: {isOccupied}, Obstructed: {isObstructed}");
+    
+    if (isValidPosition && !isOccupied && !isObstructed)
+    {
+        SetTileOccupied(groundObj, gridPos, true);
+        CreateUnit(gridPos, groundObj);
         
-        // Check if we can place more units
-        if (unitSelector != null && !unitSelector.CanPlaceMoreUnits())
+        // Notify the selector that a unit was placed
+        if (unitSelector != null)
         {
-            Debug.Log($"Cannot place more units! Limit reached: {unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()}");
-            return;
+            unitSelector.OnUnitPlaced();
         }
         
-        Vector2Int gridPos = currentGridPos;
-        GameObject groundObj = currentGroundObject;
-        
-        bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
-        bool isOccupied = IsTileOccupied(groundObj, gridPos);
-        bool isObstructed = IsPositionObstructed(gridPos, groundObj);
-        bool isReachable = heightChecker != null ? heightChecker.IsPositionReachable(gridPos, groundObj) : true;
-        
-        Debug.Log($"=== PLACEMENT ATTEMPT === Position: {gridPos}, Ground: {groundObj.name}");
-        Debug.Log($"Valid: {isValidPosition}, Occupied: {isOccupied}, Obstructed: {isObstructed}, Reachable: {isReachable}");
-        Debug.Log($"HeightChecker exists: {heightChecker != null}");
-        
-        if (isValidPosition && !isOccupied && !isObstructed && isReachable)
+        if (exitModeAfterPlacement)
         {
-            SetTileOccupied(groundObj, gridPos, true);
-            CreateUnit(gridPos, groundObj);
-            
-            // Notify the selector that a unit was placed
-            if (unitSelector != null)
-            {
-                unitSelector.OnUnitPlaced();
-            }
-            
-            if (exitModeAfterPlacement)
-            {
-                ExitMode();
-            }
-        }
-        else
-        {
-            if (!isValidPosition)
-                Debug.Log("BLOCKED: Outside grid bounds!");
-            else if (isOccupied)
-                Debug.Log("BLOCKED: Tile occupied!");
-            else if (isObstructed)
-                Debug.Log("BLOCKED: Position obstructed!");
-            else if (!isReachable)
-                Debug.Log("BLOCKED: Position not reachable!");
+            ExitMode();
         }
     }
+    else
+    {
+        if (!isValidPosition)
+            Debug.Log("BLOCKED: Outside grid bounds!");
+        else if (isOccupied)
+            Debug.Log("BLOCKED: Tile occupied!");
+        else if (isObstructed)
+            Debug.Log("BLOCKED: Position obstructed!");
+    }
+}
+
     
     void CreateUnit(Vector2Int gridPos, GameObject groundObj)
     {
@@ -432,12 +423,6 @@ public class UnitPlacementManager : MonoBehaviour
             
             if (unit != null)
             {
-                // Notify the selector that a unit was removed
-                if (unitSelector != null)
-                {
-                    unitSelector.OnUnitRemoved();
-                }
-                
                 Destroy(unit);
             }
         }

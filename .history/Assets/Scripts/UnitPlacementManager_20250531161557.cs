@@ -310,9 +310,7 @@ public class UnitPlacementManager : MonoBehaviour
         bool isObstructed = IsPositionObstructed(gridPos, groundObj);
         bool isReachable = heightChecker != null ? heightChecker.IsPositionReachable(gridPos, groundObj) : true;
         
-        Debug.Log($"=== PLACEMENT ATTEMPT === Position: {gridPos}, Ground: {groundObj.name}");
-        Debug.Log($"Valid: {isValidPosition}, Occupied: {isOccupied}, Obstructed: {isObstructed}, Reachable: {isReachable}");
-        Debug.Log($"HeightChecker exists: {heightChecker != null}");
+        Debug.Log($"Placement check - Valid: {isValidPosition}, Occupied: {isOccupied}, Obstructed: {isObstructed}, Reachable: {isReachable}");
         
         if (isValidPosition && !isOccupied && !isObstructed && isReachable)
         {

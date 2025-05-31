@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class UnitPlacementManager : MonoBehaviour
 {
@@ -30,10 +30,8 @@ public class UnitPlacementManager : MonoBehaviour
     private Dictionary<string, bool> tileOccupation = new Dictionary<string, bool>();
     private Dictionary<string, GameObject> tileUnits = new Dictionary<string, GameObject>();
     
-    // Integration with other systems
     private SimpleUnitSelector unitSelector;
-    private SimpleHeightCheck heightChecker;
-    
+
     void Start()
     {
         gridManager = FindFirstObjectByType<GridOverlayManager>();
@@ -51,12 +49,10 @@ public class UnitPlacementManager : MonoBehaviour
         {
             CreateDefaultHighlight();
         }
+
+        unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
         
         InitializeTileSystem();
-        
-        // Find other systems
-        unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
-        heightChecker = FindFirstObjectByType<SimpleHeightCheck>();
     }
     
     void InitializeTileSystem()
@@ -99,7 +95,7 @@ public class UnitPlacementManager : MonoBehaviour
         return $"{groundObj.GetInstanceID()}_{gridPos.x}_{gridPos.y}";
     }
     
-    public bool IsTileOccupied(GameObject groundObj, Vector2Int gridPos)
+    bool IsTileOccupied(GameObject groundObj, Vector2Int gridPos)
     {
         string tileKey = GetTileKey(groundObj, gridPos);
         
@@ -255,8 +251,7 @@ public class UnitPlacementManager : MonoBehaviour
         bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
         bool isOccupied = IsTileOccupied(groundObj, gridPos);
         bool isObstructed = IsPositionObstructed(gridPos, groundObj);
-        bool isReachable = heightChecker != null ? heightChecker.IsPositionReachable(gridPos, groundObj) : true;
-        bool isValid = isValidPosition && !isOccupied && !isObstructed && isReachable;
+        bool isValid = isValidPosition && !isOccupied && !isObstructed;
         
         Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
         ShowHighlight(worldPos, isValid);
@@ -295,35 +290,19 @@ public class UnitPlacementManager : MonoBehaviour
     {
         if (currentGroundObject == null) return;
         
-        // Check if we can place more units
-        if (unitSelector != null && !unitSelector.CanPlaceMoreUnits())
-        {
-            Debug.Log($"Cannot place more units! Limit reached: {unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()}");
-            return;
-        }
-        
         Vector2Int gridPos = currentGridPos;
         GameObject groundObj = currentGroundObject;
         
         bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
         bool isOccupied = IsTileOccupied(groundObj, gridPos);
         bool isObstructed = IsPositionObstructed(gridPos, groundObj);
-        bool isReachable = heightChecker != null ? heightChecker.IsPositionReachable(gridPos, groundObj) : true;
         
-        Debug.Log($"=== PLACEMENT ATTEMPT === Position: {gridPos}, Ground: {groundObj.name}");
-        Debug.Log($"Valid: {isValidPosition}, Occupied: {isOccupied}, Obstructed: {isObstructed}, Reachable: {isReachable}");
-        Debug.Log($"HeightChecker exists: {heightChecker != null}");
+        Debug.Log($"Placement check - Valid: {isValidPosition}, Occupied: {isOccupied}, Obstructed: {isObstructed}");
         
-        if (isValidPosition && !isOccupied && !isObstructed && isReachable)
+        if (isValidPosition && !isOccupied && !isObstructed)
         {
             SetTileOccupied(groundObj, gridPos, true);
             CreateUnit(gridPos, groundObj);
-            
-            // Notify the selector that a unit was placed
-            if (unitSelector != null)
-            {
-                unitSelector.OnUnitPlaced();
-            }
             
             if (exitModeAfterPlacement)
             {
@@ -338,8 +317,6 @@ public class UnitPlacementManager : MonoBehaviour
                 Debug.Log("BLOCKED: Tile occupied!");
             else if (isObstructed)
                 Debug.Log("BLOCKED: Position obstructed!");
-            else if (!isReachable)
-                Debug.Log("BLOCKED: Position not reachable!");
         }
     }
     
@@ -432,12 +409,6 @@ public class UnitPlacementManager : MonoBehaviour
             
             if (unit != null)
             {
-                // Notify the selector that a unit was removed
-                if (unitSelector != null)
-                {
-                    unitSelector.OnUnitRemoved();
-                }
-                
                 Destroy(unit);
             }
         }

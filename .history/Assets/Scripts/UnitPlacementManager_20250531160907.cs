@@ -32,7 +32,7 @@ public class UnitPlacementManager : MonoBehaviour
     
     // Integration with other systems
     private SimpleUnitSelector unitSelector;
-    private SimpleHeightCheck heightChecker;
+    private HeightValidator heightValidator;
     
     void Start()
     {
@@ -56,7 +56,7 @@ public class UnitPlacementManager : MonoBehaviour
         
         // Find other systems
         unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
-        heightChecker = FindFirstObjectByType<SimpleHeightCheck>();
+        heightValidator = FindFirstObjectByType<HeightValidator>();
     }
     
     void InitializeTileSystem()
@@ -255,7 +255,7 @@ public class UnitPlacementManager : MonoBehaviour
         bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
         bool isOccupied = IsTileOccupied(groundObj, gridPos);
         bool isObstructed = IsPositionObstructed(gridPos, groundObj);
-        bool isReachable = heightChecker != null ? heightChecker.IsPositionReachable(gridPos, groundObj) : true;
+        bool isReachable = heightValidator != null ? heightValidator.IsPositionReachable(gridPos, groundObj) : true;
         bool isValid = isValidPosition && !isOccupied && !isObstructed && isReachable;
         
         Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
@@ -308,11 +308,9 @@ public class UnitPlacementManager : MonoBehaviour
         bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
         bool isOccupied = IsTileOccupied(groundObj, gridPos);
         bool isObstructed = IsPositionObstructed(gridPos, groundObj);
-        bool isReachable = heightChecker != null ? heightChecker.IsPositionReachable(gridPos, groundObj) : true;
+        bool isReachable = heightValidator != null ? heightValidator.IsPositionReachable(gridPos, groundObj) : true;
         
-        Debug.Log($"=== PLACEMENT ATTEMPT === Position: {gridPos}, Ground: {groundObj.name}");
-        Debug.Log($"Valid: {isValidPosition}, Occupied: {isOccupied}, Obstructed: {isObstructed}, Reachable: {isReachable}");
-        Debug.Log($"HeightChecker exists: {heightChecker != null}");
+        Debug.Log($"Placement check - Valid: {isValidPosition}, Occupied: {isOccupied}, Obstructed: {isObstructed}, Reachable: {isReachable}");
         
         if (isValidPosition && !isOccupied && !isObstructed && isReachable)
         {
