@@ -298,7 +298,7 @@ public class UnitPlacementManager : MonoBehaviour
         // Check if we can place more units
         if (unitSelector != null && !unitSelector.CanPlaceMoreUnits())
         {
-            SimpleMessageLog.Log($"Unit limit reached! ({unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()})");
+            OnScreenLog.LogWarning($"Unit limit reached! ({unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()})");
             Debug.Log($"Cannot place more units! Limit reached: {unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()}");
             return;
         }
@@ -327,7 +327,7 @@ public class UnitPlacementManager : MonoBehaviour
             }
             
             // Log successful placement
-            SimpleMessageLog.Log($"Unit placed at {gridPos}");
+            OnScreenLog.LogSuccess($"Unit placed at {gridPos}");
             
             if (exitModeAfterPlacement)
             {
@@ -339,47 +339,43 @@ public class UnitPlacementManager : MonoBehaviour
             // Log specific blocking reasons
             if (!isValidPosition)
             {
-                SimpleMessageLog.Log("Can't place - Outside bounds!");
+                OnScreenLog.LogError("Can't place here - Outside grid bounds!");
                 Debug.Log("BLOCKED: Outside grid bounds!");
             }
             else if (isOccupied)
             {
-                SimpleMessageLog.Log("Can't place - Tile occupied!");
+                OnScreenLog.LogError("Can't place here - Tile already occupied!");
                 Debug.Log("BLOCKED: Tile occupied!");
             }
             else if (isObstructed)
             {
-                SimpleMessageLog.Log("Can't place - Position blocked!");
+                OnScreenLog.LogError("Can't place here - Position obstructed!");
                 Debug.Log("BLOCKED: Position obstructed!");
             }
             else if (!isReachable)
             {
-                SimpleMessageLog.Log("Can't place - Too high to reach!");
+                OnScreenLog.LogError("Can't place here - Position too high to reach!");
                 Debug.Log("BLOCKED: Position not reachable!");
             }
         }
     }
     
     void CreateUnit(Vector2Int gridPos, GameObject groundObj)
-{
-    // Use the grid manager's new terrain-following position calculation
-    Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
-    
-    // The GridToWorldPosition now returns the actual ground surface position
-    // Add the height offset on top of that
-    float heightOffset = CalculateUnitHeightOffset();
-    worldPos.y += heightOffset;
-    
-    GameObject newUnit = Instantiate(playerPrefab, worldPos, Quaternion.identity);
-    SetTileOccupied(groundObj, gridPos, true, newUnit);
-    
-    UnitGridInfo unitInfo = newUnit.AddComponent<UnitGridInfo>();
-    unitInfo.gridPosition = gridPos;
-    unitInfo.groundObject = groundObj;
-    unitInfo.placementManager = this;
-    
-    Debug.Log($"Unit created at {gridPos} with world position {worldPos}");
-}
+    {
+        Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
+        float heightOffset = CalculateUnitHeightOffset();
+        worldPos.y += heightOffset;
+        
+        GameObject newUnit = Instantiate(playerPrefab, worldPos, Quaternion.identity);
+        SetTileOccupied(groundObj, gridPos, true, newUnit);
+        
+        UnitGridInfo unitInfo = newUnit.AddComponent<UnitGridInfo>();
+        unitInfo.gridPosition = gridPos;
+        unitInfo.groundObject = groundObj;
+        unitInfo.placementManager = this;
+        
+        Debug.Log($"Unit created at {gridPos}");
+    }
     
     float CalculateUnitHeightOffset()
     {

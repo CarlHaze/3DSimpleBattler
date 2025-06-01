@@ -361,25 +361,21 @@ public class UnitPlacementManager : MonoBehaviour
     }
     
     void CreateUnit(Vector2Int gridPos, GameObject groundObj)
-{
-    // Use the grid manager's new terrain-following position calculation
-    Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
-    
-    // The GridToWorldPosition now returns the actual ground surface position
-    // Add the height offset on top of that
-    float heightOffset = CalculateUnitHeightOffset();
-    worldPos.y += heightOffset;
-    
-    GameObject newUnit = Instantiate(playerPrefab, worldPos, Quaternion.identity);
-    SetTileOccupied(groundObj, gridPos, true, newUnit);
-    
-    UnitGridInfo unitInfo = newUnit.AddComponent<UnitGridInfo>();
-    unitInfo.gridPosition = gridPos;
-    unitInfo.groundObject = groundObj;
-    unitInfo.placementManager = this;
-    
-    Debug.Log($"Unit created at {gridPos} with world position {worldPos}");
-}
+    {
+        Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
+        float heightOffset = CalculateUnitHeightOffset();
+        worldPos.y += heightOffset;
+        
+        GameObject newUnit = Instantiate(playerPrefab, worldPos, Quaternion.identity);
+        SetTileOccupied(groundObj, gridPos, true, newUnit);
+        
+        UnitGridInfo unitInfo = newUnit.AddComponent<UnitGridInfo>();
+        unitInfo.gridPosition = gridPos;
+        unitInfo.groundObject = groundObj;
+        unitInfo.placementManager = this;
+        
+        Debug.Log($"Unit created at {gridPos}");
+    }
     
     float CalculateUnitHeightOffset()
     {

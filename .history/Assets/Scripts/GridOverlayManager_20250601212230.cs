@@ -89,47 +89,47 @@ public class GridOverlayManager : MonoBehaviour
     
     private void GenerateGridLines(GameObject parent, Bounds bounds, int gridCountX, int gridCountZ, GameObject groundObject)
     {
-        // For complex terrain, create flat grid squares instead of jagged lines
-        // This creates a clean grid overlay that's easier to read
+        Vector3 startPos = bounds.min;
         
-        for (int x = 0; x < gridCountX; x++)
+        // Create vertical lines (along Z-axis)
+        for (int x = 0; x <= gridCountX; x++)
         {
-            for (int z = 0; z < gridCountZ; z++)
+            List<Vector3> linePoints = new List<Vector3>();
+            
+            for (int z = 0; z <= gridCountZ; z++)
             {
                 Vector2Int gridPos = new Vector2Int(x, z);
-                
-                // Check if this position has ground
-                if (HasGroundAt(gridPos, groundObject))
-                {
-                    CreateGridSquare(parent, gridPos, groundObject);
-                }
+                Vector3 worldPos = GetActualGroundPosition(gridPos, groundObject);
+                worldPos.y += gridHeight;
+                linePoints.Add(worldPos);
+            }
+            
+            // Create line segments for this vertical line
+            for (int i = 0; i < linePoints.Count - 1; i++)
+            {
+                CreateGridLine(parent, linePoints[i], linePoints[i + 1], $"GridLine_V_{x}_{i}");
             }
         }
-    }
-    
-    private void CreateGridSquare(GameObject parent, Vector2Int gridPos, GameObject groundObject)
-    {
-        // Get the ground position for this grid cell
-        Vector3 centerPos = GetActualGroundPosition(gridPos, groundObject);
-        centerPos.y += gridHeight;
         
-        // Create a flat square outline for this grid cell
-        float halfSize = gridSize * 0.5f;
-        
-        // Calculate the four corners of the square (flat at the ground height)
-        Vector3[] corners = new Vector3[4]
+        // Create horizontal lines (along X-axis)
+        for (int z = 0; z <= gridCountZ; z++)
         {
-            new Vector3(centerPos.x - halfSize, centerPos.y, centerPos.z - halfSize), // Bottom-left
-            new Vector3(centerPos.x + halfSize, centerPos.y, centerPos.z - halfSize), // Bottom-right
-            new Vector3(centerPos.x + halfSize, centerPos.y, centerPos.z + halfSize), // Top-right
-            new Vector3(centerPos.x - halfSize, centerPos.y, centerPos.z + halfSize)  // Top-left
-        };
-        
-        // Create the four sides of the square
-        CreateGridLine(parent, corners[0], corners[1], $"GridSquare_{gridPos.x}_{gridPos.y}_Bottom");
-        CreateGridLine(parent, corners[1], corners[2], $"GridSquare_{gridPos.x}_{gridPos.y}_Right");
-        CreateGridLine(parent, corners[2], corners[3], $"GridSquare_{gridPos.x}_{gridPos.y}_Top");
-        CreateGridLine(parent, corners[3], corners[0], $"GridSquare_{gridPos.x}_{gridPos.y}_Left");
+            List<Vector3> linePoints = new List<Vector3>();
+            
+            for (int x = 0; x <= gridCountX; x++)
+            {
+                Vector2Int gridPos = new Vector2Int(x, z);
+                Vector3 worldPos = GetActualGroundPosition(gridPos, groundObject);
+                worldPos.y += gridHeight;
+                linePoints.Add(worldPos);
+            }
+            
+            // Create line segments for this horizontal line
+            for (int i = 0; i < linePoints.Count - 1; i++)
+            {
+                CreateGridLine(parent, linePoints[i], linePoints[i + 1], $"GridLine_H_{z}_{i}");
+            }
+        }
     }
     
     private void CreateGridLine(GameObject parent, Vector3 start, Vector3 end, string lineName)
