@@ -142,6 +142,10 @@ public class GridMovementHighlighter : MonoBehaviour
         Vector2Int unitPos = unitInfo.gridPosition;
         GameObject unitGround = unitInfo.groundObject;
         
+        if (enableDebugLogs)
+        {
+            Debug.Log($"Showing movement range from {unitPos} on {unitGround.name}");
+        }
         
         int validCount = 0;
         int invalidCount = 0;
@@ -203,6 +207,10 @@ public class GridMovementHighlighter : MonoBehaviour
             }
         }
         
+        if (enableDebugLogs)
+        {
+            Debug.Log($"Created {validCount} valid (blue) and {invalidCount} invalid (red) highlights");
+        }
     }
     
     bool IsPositionOccupied(Vector2Int gridPos, GameObject groundObject)
@@ -232,6 +240,10 @@ public class GridMovementHighlighter : MonoBehaviour
             // Simple tag check for enemies
             if (col.CompareTag("Enemy"))
             {
+                if (enableDebugLogs)
+                {
+                    Debug.Log($"Found enemy {col.name} at grid position {gridPos}");
+                }
                 return true;
             }
         }
@@ -338,6 +350,10 @@ public class GridMovementHighlighter : MonoBehaviour
         
         movementHighlights.Add(highlight);
         
+        if (enableDebugLogs && movementHighlights.Count <= 5) // Only log first few
+        {
+            Debug.Log($"Created {(isValid ? "VALID" : "INVALID")} highlight at {worldPos} for grid {gridPos} on {groundObject.name}");
+        }
     }
     
     void ClearMovementHighlights()

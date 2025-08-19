@@ -18,6 +18,7 @@ public class UnitMovementManager : MonoBehaviour
     private GridOverlayManager gridManager;
     private UnitPlacementManager placementManager;
     private SimpleHeightCheck heightChecker;
+    private TurnManager turnManager;
     
     // Current selection state
     private GameObject selectedUnit;
@@ -37,6 +38,7 @@ public class UnitMovementManager : MonoBehaviour
         gridManager = FindFirstObjectByType<GridOverlayManager>();
         placementManager = FindFirstObjectByType<UnitPlacementManager>();
         heightChecker = FindFirstObjectByType<SimpleHeightCheck>();
+        turnManager = FindFirstObjectByType<TurnManager>();
 
         if (gridManager == null)
             Debug.LogError("GridOverlayManager not found!");
@@ -44,6 +46,8 @@ public class UnitMovementManager : MonoBehaviour
             Debug.LogError("UnitPlacementManager not found!");
         if (heightChecker == null)
             Debug.LogError("SimpleHeightCheck not found!");
+        if (turnManager == null)
+            Debug.LogError("TurnManager not found!");
         
     }
     
@@ -88,7 +92,24 @@ public class UnitMovementManager : MonoBehaviour
         // Check if clicked object is a player unit
         if (clickedObject.CompareTag("Player"))
         {
-            SelectUnit(clickedObject);
+            // Check if it's the player's turn and this unit can act
+            BattleUnit battleUnit = clickedObject.GetComponent<BattleUnit>();
+            if (battleUnit != null && turnManager != null)
+            {
+                if (turnManager.CanPlayerActWithUnit(battleUnit))
+                {
+                    SelectUnit(clickedObject);
+                }
+                else
+                {
+                    Debug.Log($"Cannot select {clickedObject.name} - not their turn or cannot act");
+                    DeselectUnit();
+                }
+            }
+            else
+            {
+                SelectUnit(clickedObject);
+            }
         }
         else
         {
@@ -118,9 +139,10 @@ public class UnitMovementManager : MonoBehaviour
             ShowMovementRange(unitInfo.gridPosition, unitInfo.groundObject);
         }
         
+        Debug.Log($"Selected unit: {unit.name} at position {unitInfo?.gridPosition}");
     }
     
-    void DeselectUnit()
+    public void DeselectUnit()
     {
         selectedUnit = null;
         currentGroundObject = null;
@@ -233,6 +255,14 @@ public class UnitMovementManager : MonoBehaviour
         UnitGridInfo unitInfo = selectedUnit.GetComponent<UnitGridInfo>();
         if (unitInfo == null) return;
         
+        // Check if unit can move (has enough AP)
+        BattleUnit battleUnit = selectedUnit.GetComponent<BattleUnit>();
+        if (battleUnit != null && !battleUnit.TryMove())
+        {
+            Debug.Log($"{selectedUnit.name} cannot move - insufficient action points");
+            return;
+        }
+        
         // Clear old position in placement manager
         placementManager.SetTileOccupied(unitInfo.groundObject, unitInfo.gridPosition, false);
         
@@ -253,8 +283,9 @@ public class UnitMovementManager : MonoBehaviour
         // Mark new position as occupied
         placementManager.SetTileOccupied(currentGroundObject, targetGridPos, true, selectedUnit);
         
+        Debug.Log($"Unit moved to {targetGridPos}");
         
-        // Clear selection and highlights
+        // Clear selection and highlights (unit might still have AP for other actions)
         DeselectUnit();
     }
     

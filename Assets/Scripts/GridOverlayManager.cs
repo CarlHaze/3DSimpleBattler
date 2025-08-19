@@ -32,7 +32,6 @@ public class GridOverlayManager : MonoBehaviour
         // IMPORTANT: Set up the layer mask to include the ground layer
         groundLayerMask = 1 << groundLayer;
         
-        Debug.Log($"Ground layer: {groundLayer}, Ground layer mask: {groundLayerMask}");
         
         if (generateOnStart)
         {
@@ -181,7 +180,6 @@ public class GridOverlayManager : MonoBehaviour
         {
             if (obj.layer == groundLayer && obj.GetComponent<Renderer>() != null)
             {
-                Debug.Log($"Testing ground object: {obj.name}");
                 
                 // Test a few grid positions
                 for (int x = 0; x < 3; x++)
@@ -192,7 +190,6 @@ public class GridOverlayManager : MonoBehaviour
                         Vector3 groundPos = GetActualGroundPosition(testPos, obj);
                         bool hasGround = HasGroundAt(testPos, obj);
                         
-                        Debug.Log($"Grid {testPos}: Ground at {groundPos}, Has ground: {hasGround}");
                     }
                 }
                 break; // Only test first ground object
@@ -239,7 +236,6 @@ public class GridOverlayManager : MonoBehaviour
         
         if (debugRaycasts)
         {
-            Debug.Log($"Raycasting from {rayStart} down for grid {gridPos}");
         }
         
         // Try multiple raycast approaches to find the ground
@@ -253,7 +249,6 @@ public class GridOverlayManager : MonoBehaviour
             {
                 if (debugRaycasts)
                 {
-                    Debug.Log($"Hit ground collider at {hit.point} for grid {gridPos}");
                 }
                 return hit.point;
             }
@@ -264,7 +259,6 @@ public class GridOverlayManager : MonoBehaviour
         {
             if (debugRaycasts)
             {
-                Debug.Log($"Hit ground layer at {hit.point} for grid {gridPos}");
             }
             return hit.point;
         }
@@ -276,7 +270,6 @@ public class GridOverlayManager : MonoBehaviour
             {
                 if (debugRaycasts)
                 {
-                    Debug.Log($"Hit specific ground object at {hit.point} for grid {gridPos}");
                 }
                 return hit.point;
             }
@@ -284,7 +277,6 @@ public class GridOverlayManager : MonoBehaviour
         
         if (debugRaycasts)
         {
-            Debug.LogWarning($"No ground found for grid {gridPos}, using bounds max");
         }
         
         // Fallback: Use the bounds max as before

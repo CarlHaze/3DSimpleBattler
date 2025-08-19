@@ -81,7 +81,6 @@ public class EnemySpawner : MonoBehaviour
             allValidPositions.AddRange(positions);
         }
         
-        Debug.Log($"Found {allValidPositions.Count} total valid positions across {groundObjects.Count} ground objects");
         
         // Shuffle the positions for random selection
         for (int i = 0; i < allValidPositions.Count; i++)
@@ -105,12 +104,10 @@ public class EnemySpawner : MonoBehaviour
                 if (TrySpawnEnemyAt(spawnPos.gridPos, spawnPos.groundObject))
                 {
                     enemiesSpawned++;
-                    Debug.Log($"Enemy {enemiesSpawned} spawned at {spawnPos.gridPos} on {spawnPos.groundObject.name}");
                 }
             }
         }
         
-        Debug.Log($"Spawned {enemiesSpawned}/{enemiesToSpawn} enemies from {allValidPositions.Count} valid positions");
     }
     
     List<SpawnPosition> GetAllValidPositionsOnGround(GameObject groundObject)
@@ -312,7 +309,6 @@ public class EnemySpawner : MonoBehaviour
         enemyInfo.spawner = this;
         enemyInfo.placementManager = placementManager;
         
-        Debug.Log($"Enemy spawned at grid position {gridPos}");
         return true;
     }
     
@@ -352,7 +348,6 @@ public class EnemySpawner : MonoBehaviour
             }
         }
         spawnedEnemies.Clear();
-        Debug.Log("All enemies cleared");
     }
     
     public void RemoveEnemy(GameObject enemy)

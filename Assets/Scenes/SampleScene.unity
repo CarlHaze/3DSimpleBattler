@@ -365,8 +365,8 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 25
+  m_VertexColorAlwaysGammaSpace: 1
+  m_AdditionalShaderChannelsFlag: 1
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -2140,7 +2140,7 @@ MonoBehaviour:
   moveSpeed: 2
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 0
   validMoveColor: {r: 0, g: 0, b: 1, a: 1}
   blockedMoveColor: {r: 1, g: 0, b: 0, a: 1}
   movementHighlightMaterial: {fileID: 2100000, guid: d2eeb26d31a75064693dbcd2222cc504, type: 2}
