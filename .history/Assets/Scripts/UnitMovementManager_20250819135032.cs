@@ -172,10 +172,6 @@ public class UnitMovementManager : MonoBehaviour
         if (placementManager.IsTileOccupied(groundObject, gridPos))
             return false;
         
-        // Check if position is reachable (height restrictions)
-        if (heightChecker != null && !heightChecker.IsPositionReachable(gridPos, groundObject))
-            return false;
-        
         // Add any additional movement restrictions here
         // (e.g., terrain types, obstacles, etc.)
         
