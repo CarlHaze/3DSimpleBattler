@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - Enemy
+  - Obstacle
+  - Wall
+  - Unwalkable
   layers:
   - Default
   - TransparentFX
