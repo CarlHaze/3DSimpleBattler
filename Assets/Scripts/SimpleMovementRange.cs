@@ -35,10 +35,11 @@ public class SimpleMovementRange : MonoBehaviour
     
     void Update()
     {
+        // DISABLED - This system conflicts with GridMovementHighlighter
         // Only allow selection when all units are placed
-        if (!AllUnitsPlaced()) return;
+        // if (!AllUnitsPlaced()) return;
         
-        HandleInput();
+        // HandleInput();
     }
     
     bool AllUnitsPlaced()

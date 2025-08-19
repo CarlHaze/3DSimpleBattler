@@ -18,6 +18,7 @@ public class UnitMovementManager : MonoBehaviour
     private GridOverlayManager gridManager;
     private UnitPlacementManager placementManager;
     private SimpleHeightCheck heightChecker;
+    private SimpleUnitSelector unitSelector;
     
     // Current selection state
     private GameObject selectedUnit;
@@ -37,6 +38,7 @@ public class UnitMovementManager : MonoBehaviour
         gridManager = FindFirstObjectByType<GridOverlayManager>();
         placementManager = FindFirstObjectByType<UnitPlacementManager>();
         heightChecker = FindFirstObjectByType<SimpleHeightCheck>();
+        unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
 
         if (gridManager == null)
             Debug.LogError("GridOverlayManager not found!");
@@ -49,10 +51,20 @@ public class UnitMovementManager : MonoBehaviour
     
     void Update()
     {
+        // Handle both unit selection and movement
         if (!isMoving)
         {
+            // Only allow selection when all units are placed
+            if (!AllUnitsPlaced()) return;
+            
             HandleInput();
         }
+    }
+    
+    bool AllUnitsPlaced()
+    {
+        if (unitSelector == null) return true;
+        return unitSelector.GetUnitsPlaced() >= unitSelector.GetMaxUnits();
     }
     
     void HandleInput()
@@ -62,17 +74,18 @@ public class UnitMovementManager : MonoBehaviour
             Ray ray = gameCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             
-            // First check if we clicked on a movement highlight
-            if (selectedUnit != null && Physics.Raycast(ray, out hit))
-            {
-                if (TryMoveToPosition(hit.point))
-                    return; // Movement handled, don't process unit selection
-            }
-            
-            // If no movement, try to select a unit
             if (Physics.Raycast(ray, out hit))
             {
-                HandleUnitSelection(hit.collider.gameObject);
+                GameObject clickedObject = hit.collider.gameObject;
+                
+                // First check if we clicked on a movement highlight
+                if (selectedUnit != null && TryMoveToPosition(hit.point, clickedObject))
+                {
+                    return; // Movement handled, don't process unit selection
+                }
+                
+                // If no movement, try to select a unit
+                HandleUnitSelection(clickedObject);
             }
         }
         
@@ -116,12 +129,16 @@ public class UnitMovementManager : MonoBehaviour
         {
             currentGroundObject = unitInfo.groundObject;
             ShowMovementRange(unitInfo.gridPosition, unitInfo.groundObject);
+            SimpleMessageLog.Log($"Selected {unit.name}");
         }
         
     }
     
     void DeselectUnit()
     {
+        if (selectedUnit == null) return;
+        
+        SimpleMessageLog.Log("Unit deselected");
         selectedUnit = null;
         currentGroundObject = null;
         ClearMovementHighlights();
@@ -186,12 +203,12 @@ public class UnitMovementManager : MonoBehaviour
         Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObject);
         
         GameObject highlight = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        highlight.name = $"MoveHighlight_{gridPos.x}_{gridPos.y}";
+        highlight.name = $"MovementHighlight_{gridPos.x}_{gridPos.y}_{(isValid ? "Valid" : "Invalid")}";
         highlight.transform.position = worldPos;
         highlight.transform.localScale = new Vector3(0.8f, 0.02f, 0.8f);
         
-        // Remove collider so it doesn't interfere with raycasting
-        Destroy(highlight.GetComponent<Collider>());
+        // Keep collider so we can click on highlights for movement
+        // Destroy(highlight.GetComponent<Collider>());
         
         // Set material and color
         Renderer renderer = highlight.GetComponent<Renderer>();
@@ -211,21 +228,23 @@ public class UnitMovementManager : MonoBehaviour
         movementHighlights.Add(highlight);
     }
     
-    bool TryMoveToPosition(Vector3 worldClickPos)
+    bool TryMoveToPosition(Vector3 worldClickPos, GameObject clickedObject)
     {
         if (selectedUnit == null || currentGroundObject == null)
             return false;
         
-        // Convert world position to grid position
-        Vector2Int targetGridPos = gridManager.WorldToGridPosition(worldClickPos, currentGroundObject);
+        // Check if we clicked on a valid movement highlight
+        if (clickedObject != null && clickedObject.name.StartsWith("MovementHighlight_") && clickedObject.name.Contains("Valid"))
+        {
+            // Convert world position to grid position
+            Vector2Int targetGridPos = gridManager.WorldToGridPosition(worldClickPos, currentGroundObject);
+            
+            // Perform the move
+            MoveUnit(targetGridPos);
+            return true;
+        }
         
-        // Check if this is a valid move position
-        if (!validMovePositions.Contains(targetGridPos))
-            return false;
-        
-        // Perform the move
-        MoveUnit(targetGridPos);
-        return true;
+        return false;
     }
     
     void MoveUnit(Vector2Int targetGridPos)
