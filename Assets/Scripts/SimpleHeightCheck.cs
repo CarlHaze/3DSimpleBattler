@@ -16,10 +16,6 @@ public class SimpleHeightCheck : MonoBehaviour
     {
         gridManager = FindFirstObjectByType<GridOverlayManager>();
         
-        if (enableDebugLogs)
-        {
-            Debug.Log($"SimpleHeightCheck initialized. MaxHeightToCheck: {maxHeightToCheck}, MaxClimbHeight: {maxClimbHeight}");
-        }
     }
     
     public bool IsPositionReachable(Vector2Int gridPos, GameObject groundObject)
@@ -27,28 +23,16 @@ public class SimpleHeightCheck : MonoBehaviour
         Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObject);
         float currentHeight = GetGroundHeightAtPosition(worldPos);
         
-        if (enableDebugLogs)
-        {
-            Debug.Log($"=== HEIGHT CHECK === Grid: {gridPos}, Height: {currentHeight}, Ground: {groundObject.name}");
-        }
         
         // If position is not very high, it's probably reachable
         if (currentHeight <= maxHeightToCheck)
         {
-            if (enableDebugLogs)
-            {
-                Debug.Log($"Position is low enough ({currentHeight} <= {maxHeightToCheck}) - ALLOWED");
-            }
             return true;
         }
         
         // For high positions, check if there's a climbable path from adjacent positions
         bool hasClimbablePath = HasClimbableAdjacentPosition(gridPos, groundObject, currentHeight);
         
-        if (enableDebugLogs)
-        {
-            Debug.Log($"High position - Has climbable path: {hasClimbablePath}");
-        }
         
         return hasClimbablePath;
     }
@@ -71,10 +55,6 @@ public class SimpleHeightCheck : MonoBehaviour
         {
             if (IsAdjacentPositionClimbable(adjPos, groundObject, currentHeight))
             {
-                if (enableDebugLogs)
-                {
-                    Debug.Log($"Found climbable adjacent position at {adjPos}");
-                }
                 return true;
             }
         }
@@ -94,10 +74,6 @@ public class SimpleHeightCheck : MonoBehaviour
             // Calculate height difference (how much we need to climb UP to reach current position)
             float heightDiff = currentHeight - adjHeight;
             
-            if (enableDebugLogs)
-            {
-                Debug.Log($"Adjacent {adjPos} on same ground: height {adjHeight}, diff {heightDiff}");
-            }
             
             // If we can climb from adjacent to current (heightDiff <= maxClimbHeight)
             // AND the adjacent position is low enough to be reachable
@@ -144,10 +120,6 @@ public class SimpleHeightCheck : MonoBehaviour
                         // If we can climb from adjacent to current AND adjacent is reachable
                         if (heightDiff <= maxClimbHeight && adjHeight <= maxHeightToCheck)
                         {
-                            if (enableDebugLogs)
-                            {
-                                Debug.Log($"Found climbable path via {obj.name} at {adjPos}, height {adjHeight}");
-                            }
                             return true;
                         }
                     }
