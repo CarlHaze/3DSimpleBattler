@@ -17,7 +17,6 @@ public class UnitMovementManager : MonoBehaviour
     private Camera gameCamera;
     private GridOverlayManager gridManager;
     private UnitPlacementManager placementManager;
-    private SimpleHeightCheck heightChecker;
     
     // Current selection state
     private GameObject selectedUnit;
@@ -27,24 +26,20 @@ public class UnitMovementManager : MonoBehaviour
     
     // Movement animation
     private bool isMoving = false;
-
+    
     void Start()
     {
         gameCamera = Camera.main;
         if (gameCamera == null)
             gameCamera = FindFirstObjectByType<Camera>();
-
+            
         gridManager = FindFirstObjectByType<GridOverlayManager>();
         placementManager = FindFirstObjectByType<UnitPlacementManager>();
-        heightChecker = FindFirstObjectByType<SimpleHeightCheck>();
-
+        
         if (gridManager == null)
             Debug.LogError("GridOverlayManager not found!");
         if (placementManager == null)
             Debug.LogError("UnitPlacementManager not found!");
-        if (heightChecker == null)
-            Debug.LogError("SimpleHeightCheck not found!");
-        
     }
     
     void Update()
@@ -133,7 +128,10 @@ public class UnitMovementManager : MonoBehaviour
     {
         validMovePositions.Clear();
         
-        // Calculate all positions within movement range
+        // Get all ground objects to check for enemies on different platforms
+        List<GameObject> allGroundObjects = GetAllGroundObjects();
+        
+        // Calculate all positions within movement range on current ground object
         for (int x = -movementRange; x <= movementRange; x++)
         {
             for (int z = -movementRange; z <= movementRange; z++)
@@ -160,6 +158,14 @@ public class UnitMovementManager : MonoBehaviour
                 }
             }
         }
+        
+        // Also check for enemies on other ground objects within movement range
+        foreach (GameObject otherGroundObj in allGroundObjects)
+        {
+            if (otherGroundObj == groundObject) continue; // Already checked above
+            
+            ShowMovementRangeOnGround(unitPosition, groundObject, otherGroundObj);
+        }
     }
     
     bool IsValidMovePosition(Vector2Int gridPos, GameObject groundObject)
@@ -170,10 +176,6 @@ public class UnitMovementManager : MonoBehaviour
         
         // Check if position is occupied
         if (placementManager.IsTileOccupied(groundObject, gridPos))
-            return false;
-        
-        // Check if position is reachable (height restrictions)
-        if (heightChecker != null && !heightChecker.IsPositionReachable(gridPos, groundObject))
             return false;
         
         // Add any additional movement restrictions here
@@ -311,6 +313,66 @@ public class UnitMovementManager : MonoBehaviour
         return 1f; // Default height
     }
     
+    void ShowMovementRangeOnGround(Vector2Int unitPosition, GameObject unitGroundObject, GameObject targetGroundObject)
+    {
+        Vector3 unitWorldPos = gridManager.GridToWorldPosition(unitPosition, unitGroundObject);
+        
+        // Get target ground object bounds to check all positions on it
+        Renderer renderer = targetGroundObject.GetComponent<Renderer>();
+        if (renderer == null) return;
+        
+        Bounds bounds = renderer.bounds;
+        Vector3 size = bounds.size;
+        int gridCountX = Mathf.CeilToInt(size.x / gridManager.gridSize);
+        int gridCountZ = Mathf.CeilToInt(size.z / gridManager.gridSize);
+        
+        // Check every position on target ground object
+        for (int x = 0; x < gridCountX; x++)
+        {
+            for (int z = 0; z < gridCountZ; z++)
+            {
+                Vector2Int targetGridPos = new Vector2Int(x, z);
+                Vector3 targetWorldPos = gridManager.GridToWorldPosition(targetGridPos, targetGroundObject);
+                
+                // Calculate 3D distance from unit to target position
+                float distance3D = Vector3.Distance(unitWorldPos, targetWorldPos);
+                float maxMoveDistance = movementRange * gridManager.gridSize;
+                
+                // Only show highlights for positions within movement range
+                if (distance3D <= maxMoveDistance)
+                {
+                    if (gridManager.IsValidGridPosition(targetGridPos, targetGroundObject))
+                    {
+                        // Check if target position is occupied (this will catch enemies)
+                        bool isOccupied = placementManager.IsTileOccupied(targetGroundObject, targetGridPos);
+                        
+                        if (isOccupied)
+                        {
+                            // Show red highlight for enemy positions
+                            CreateMovementHighlight(targetGridPos, targetGroundObject, false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    List<GameObject> GetAllGroundObjects()
+    {
+        List<GameObject> groundObjects = new List<GameObject>();
+        GameObject[] allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+        
+        foreach (GameObject obj in allObjects)
+        {
+            if (((1 << obj.layer) & groundLayerMask) != 0 && obj.GetComponent<Renderer>() != null)
+            {
+                groundObjects.Add(obj);
+            }
+        }
+        
+        return groundObjects;
+    }
+
     void OnDestroy()
     {
         ClearMovementHighlights();
