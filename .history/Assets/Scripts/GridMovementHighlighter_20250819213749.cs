@@ -44,11 +44,10 @@ public class GridMovementHighlighter : MonoBehaviour
     
     void Update()
     {
-        // DISABLED - UnitMovementManager now handles everything
         // Only allow selection when all units are placed
-        // if (!AllUnitsPlaced()) return;
+        if (!AllUnitsPlaced()) return;
         
-        // HandleInput();
+        HandleInput();
     }
     
     bool AllUnitsPlaced()
