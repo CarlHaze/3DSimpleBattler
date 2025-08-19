@@ -299,11 +299,18 @@ public class EnemySpawner : MonoBehaviour
         GameObject enemy = Instantiate(enemyPrefab, worldPos, Quaternion.identity);
         spawnedEnemies.Add(enemy);
         
+        // Register enemy position with placement manager
+        if (placementManager != null)
+        {
+            placementManager.SetTileOccupied(groundObject, gridPos, true, enemy);
+        }
+        
         // Add grid info to enemy (optional, for consistency)
         EnemyGridInfo enemyInfo = enemy.AddComponent<EnemyGridInfo>();
         enemyInfo.gridPosition = gridPos;
         enemyInfo.groundObject = groundObject;
         enemyInfo.spawner = this;
+        enemyInfo.placementManager = placementManager;
         
         Debug.Log($"Enemy spawned at grid position {gridPos}");
         return true;
@@ -363,9 +370,16 @@ public class EnemyGridInfo : MonoBehaviour
     [HideInInspector] public Vector2Int gridPosition;
     [HideInInspector] public GameObject groundObject;
     [HideInInspector] public EnemySpawner spawner;
+    [HideInInspector] public UnitPlacementManager placementManager;
     
     void OnDestroy()
     {
+        // Unregister from placement manager
+        if (placementManager != null)
+        {
+            placementManager.SetTileOccupied(groundObject, gridPosition, false);
+        }
+        
         if (spawner != null)
         {
             spawner.RemoveEnemy(gameObject);
