@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3032763808052610060}
   - component: {fileID: 4511550907382716821}
   - component: {fileID: 4215208715417980377}
+  - component: {fileID: 1691090282412998922}
   m_Layer: 6
   m_Name: BlueUnit1
   m_TagString: Player
@@ -110,3 +111,18 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1691090282412998922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1684369036123604669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8d4e0492b8a2984185d18333d62d1fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitName: Warrior1
+  unitClass: {fileID: 11400000, guid: 8320916f530d1f94991d1c3dd72b8490, type: 2}
+  isPlayerUnit: 1

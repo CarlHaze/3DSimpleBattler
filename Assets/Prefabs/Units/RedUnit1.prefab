@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4025513570253913149}
   - component: {fileID: 5073359085452754842}
   - component: {fileID: 473499132907548232}
+  - component: {fileID: -2880048872458437550}
   m_Layer: 6
   m_Name: RedUnit1
   m_TagString: Enemy
@@ -108,3 +109,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-2880048872458437550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5726333349782792524}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8d4e0492b8a2984185d18333d62d1fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitName: Enemy1
+  unitClass: {fileID: 11400000, guid: 8320916f530d1f94991d1c3dd72b8490, type: 2}
+  isPlayerUnit: 0
