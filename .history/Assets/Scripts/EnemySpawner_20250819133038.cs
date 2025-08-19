@@ -1,6 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+[System.Serializable]
+public class SpawnPosition
+{
+    public Vector2Int gridPos;
+    public GameObject groundObject;
+}
+
 public class EnemySpawner : MonoBehaviour
 {
     [Header("Enemy Settings")]
@@ -13,6 +20,7 @@ public class EnemySpawner : MonoBehaviour
     [Header("Spawn Control")]
     public bool spawnOnStart = true;
     public KeyCode spawnKey = KeyCode.E;
+    public int minDistanceFromUnits = 2;
     
     private GridOverlayManager gridManager;
     private UnitPlacementManager placementManager;
@@ -31,7 +39,8 @@ public class EnemySpawner : MonoBehaviour
         
         if (spawnOnStart)
         {
-            SpawnEnemies();
+            // Delay spawn to ensure everything is initialized
+            Invoke(nameof(SpawnEnemies), 0.1f);
         }
     }
     
@@ -63,30 +72,165 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
         
-        int enemiesSpawned = 0;
-        int maxAttempts = enemiesToSpawn * 10; // Prevent infinite loops
-        int attempts = 0;
+        // Collect ALL possible valid positions first
+        List<SpawnPosition> allValidPositions = new List<SpawnPosition>();
         
-        while (enemiesSpawned < enemiesToSpawn && attempts < maxAttempts)
+        foreach (GameObject groundObj in groundObjects)
         {
-            attempts++;
+            List<SpawnPosition> positions = GetAllValidPositionsOnGround(groundObj);
+            allValidPositions.AddRange(positions);
+        }
+        
+        Debug.Log($"Found {allValidPositions.Count} total valid positions across {groundObjects.Count} ground objects");
+        
+        // Shuffle the positions for random selection
+        for (int i = 0; i < allValidPositions.Count; i++)
+        {
+            SpawnPosition temp = allValidPositions[i];
+            int randomIndex = Random.Range(i, allValidPositions.Count);
+            allValidPositions[i] = allValidPositions[randomIndex];
+            allValidPositions[randomIndex] = temp;
+        }
+        
+        // Try to spawn enemies with distance checking
+        int enemiesSpawned = 0;
+        
+        foreach (SpawnPosition spawnPos in allValidPositions)
+        {
+            if (enemiesSpawned >= enemiesToSpawn) break;
             
-            // Pick a random ground object
-            GameObject randomGround = groundObjects[Random.Range(0, groundObjects.Count)];
-            
-            // Get a random valid position on that ground
-            Vector2Int randomGridPos = GetRandomValidPosition(randomGround);
-            
-            if (randomGridPos.x >= 0 && randomGridPos.y >= 0) // Valid position found
+            // Check distance from already spawned enemies
+            if (IsMinimumDistanceFromSpawnedEnemies(spawnPos.gridPos, spawnPos.groundObject))
             {
-                if (TrySpawnEnemyAt(randomGridPos, randomGround))
+                if (TrySpawnEnemyAt(spawnPos.gridPos, spawnPos.groundObject))
                 {
                     enemiesSpawned++;
+                    Debug.Log($"Enemy {enemiesSpawned} spawned at {spawnPos.gridPos} on {spawnPos.groundObject.name}");
                 }
             }
         }
         
-        Debug.Log($"Spawned {enemiesSpawned}/{enemiesToSpawn} enemies after {attempts} attempts");
+        Debug.Log($"Spawned {enemiesSpawned}/{enemiesToSpawn} enemies from {allValidPositions.Count} valid positions");
+    }
+    
+    List<SpawnPosition> GetAllValidPositionsOnGround(GameObject groundObject)
+    {
+        List<SpawnPosition> validPositions = new List<SpawnPosition>();
+        
+        Renderer renderer = groundObject.GetComponent<Renderer>();
+        if (renderer == null) return validPositions;
+        
+        Bounds bounds = renderer.bounds;
+        Vector3 size = bounds.size;
+        int gridCountX = Mathf.CeilToInt(size.x / gridManager.gridSize);
+        int gridCountZ = Mathf.CeilToInt(size.z / gridManager.gridSize);
+        
+        // Check every position on this ground object
+        for (int x = 0; x < gridCountX; x++)
+        {
+            for (int z = 0; z < gridCountZ; z++)
+            {
+                Vector2Int gridPos = new Vector2Int(x, z);
+                
+                if (IsBasicValidSpawnPosition(gridPos, groundObject))
+                {
+                    validPositions.Add(new SpawnPosition { gridPos = gridPos, groundObject = groundObject });
+                }
+            }
+        }
+        
+        return validPositions;
+    }
+    
+    bool IsBasicValidSpawnPosition(Vector2Int gridPos, GameObject groundObject)
+    {
+        // Check if position is within grid bounds
+        if (!gridManager.IsValidGridPosition(gridPos, groundObject))
+        {
+            return false;
+        }
+        
+        // Check if tile is occupied by player units
+        if (placementManager != null && placementManager.IsTileOccupied(groundObject, gridPos))
+        {
+            return false;
+        }
+        
+        // Check minimum distance from player units only (not other enemies yet)
+        if (!IsMinimumDistanceFromPlayerUnits(gridPos, groundObject))
+        {
+            return false;
+        }
+        
+        // Check for physical obstructions
+        if (IsPositionObstructed(gridPos, groundObject))
+        {
+            return false;
+        }
+        
+        // Check if position is reachable
+        SimpleHeightCheck heightChecker = FindFirstObjectByType<SimpleHeightCheck>();
+        if (heightChecker != null && !heightChecker.IsPositionReachable(gridPos, groundObject))
+        {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    bool IsMinimumDistanceFromPlayerUnits(Vector2Int gridPos, GameObject groundObject)
+    {
+        Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObject);
+        
+        // Check distance from all existing player units only
+        if (placementManager != null)
+        {
+            GameObject[] allUnits = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+            foreach (GameObject unit in allUnits)
+            {
+                UnitGridInfo unitInfo = unit.GetComponent<UnitGridInfo>();
+                if (unitInfo != null)
+                {
+                    Vector3 unitWorldPos = gridManager.GridToWorldPosition(unitInfo.gridPosition, unitInfo.groundObject);
+                    float distance = Vector3.Distance(worldPos, unitWorldPos);
+                    float minDistance = minDistanceFromUnits * gridManager.gridSize;
+                    
+                    if (distance < minDistance)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    bool IsMinimumDistanceFromSpawnedEnemies(Vector2Int gridPos, GameObject groundObject)
+    {
+        Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObject);
+        
+        // Check distance from already spawned enemies
+        foreach (GameObject enemy in spawnedEnemies)
+        {
+            if (enemy != null)
+            {
+                EnemyGridInfo enemyInfo = enemy.GetComponent<EnemyGridInfo>();
+                if (enemyInfo != null)
+                {
+                    Vector3 enemyWorldPos = gridManager.GridToWorldPosition(enemyInfo.gridPosition, enemyInfo.groundObject);
+                    float distance = Vector3.Distance(worldPos, enemyWorldPos);
+                    float minDistance = minDistanceFromUnits * gridManager.gridSize;
+                    
+                    if (distance < minDistance)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        return true;
     }
     
     List<GameObject> GetAllGroundObjects()
@@ -103,55 +247,6 @@ public class EnemySpawner : MonoBehaviour
         }
         
         return groundObjects;
-    }
-    
-    Vector2Int GetRandomValidPosition(GameObject groundObject)
-    {
-        Renderer renderer = groundObject.GetComponent<Renderer>();
-        if (renderer == null) return new Vector2Int(-1, -1);
-        
-        Bounds bounds = renderer.bounds;
-        Vector3 size = bounds.size;
-        int gridCountX = Mathf.CeilToInt(size.x / gridManager.gridSize);
-        int gridCountZ = Mathf.CeilToInt(size.z / gridManager.gridSize);
-        
-        // Try random positions
-        for (int i = 0; i < 20; i++) // Max 20 attempts per ground object
-        {
-            int randomX = Random.Range(0, gridCountX);
-            int randomZ = Random.Range(0, gridCountZ);
-            Vector2Int gridPos = new Vector2Int(randomX, randomZ);
-            
-            if (IsValidSpawnPosition(gridPos, groundObject))
-            {
-                return gridPos;
-            }
-        }
-        
-        return new Vector2Int(-1, -1); // No valid position found
-    }
-    
-    bool IsValidSpawnPosition(Vector2Int gridPos, GameObject groundObject)
-    {
-        // Check if position is within grid bounds
-        if (!gridManager.IsValidGridPosition(gridPos, groundObject))
-        {
-            return false;
-        }
-        
-        // Check if tile is occupied by player units
-        if (placementManager != null && placementManager.IsTileOccupied(groundObject, gridPos))
-        {
-            return false;
-        }
-        
-        // Check for physical obstructions
-        if (IsPositionObstructed(gridPos, groundObject))
-        {
-            return false;
-        }
-        
-        return true;
     }
     
     bool IsPositionObstructed(Vector2Int gridPos, GameObject groundObj)
@@ -204,11 +299,18 @@ public class EnemySpawner : MonoBehaviour
         GameObject enemy = Instantiate(enemyPrefab, worldPos, Quaternion.identity);
         spawnedEnemies.Add(enemy);
         
+        // Register enemy position with placement manager
+        if (placementManager != null)
+        {
+            placementManager.SetTileOccupied(groundObject, gridPos, true, enemy);
+        }
+        
         // Add grid info to enemy (optional, for consistency)
         EnemyGridInfo enemyInfo = enemy.AddComponent<EnemyGridInfo>();
         enemyInfo.gridPosition = gridPos;
         enemyInfo.groundObject = groundObject;
         enemyInfo.spawner = this;
+        enemyInfo.placementManager = placementManager;
         
         Debug.Log($"Enemy spawned at grid position {gridPos}");
         return true;
@@ -268,9 +370,16 @@ public class EnemyGridInfo : MonoBehaviour
     [HideInInspector] public Vector2Int gridPosition;
     [HideInInspector] public GameObject groundObject;
     [HideInInspector] public EnemySpawner spawner;
+    [HideInInspector] public UnitPlacementManager placementManager;
     
     void OnDestroy()
     {
+        // Unregister from placement manager
+        if (placementManager != null)
+        {
+            placementManager.SetTileOccupied(groundObject, gridPosition, false);
+        }
+        
         if (spawner != null)
         {
             spawner.RemoveEnemy(gameObject);
