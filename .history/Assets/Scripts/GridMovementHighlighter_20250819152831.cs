@@ -10,6 +10,9 @@ public class GridMovementHighlighter : MonoBehaviour
     public Color invalidMoveColor = Color.red;
     public float highlightAlpha = 0.7f;
     
+    [Header("Elevation Settings")]
+    public float maxHeightDifference = 1.5f; // Maximum height difference allowed for movement
+    
     [Header("Debug")]
     public bool enableDebugLogs = true;
     
@@ -77,7 +80,7 @@ public class GridMovementHighlighter : MonoBehaviour
             {
                 if (hit.collider.gameObject == unit && unit.CompareTag("Player"))
                 {
-                    SelectUnit(unit);
+                     SelectUnit(unit);
                     return;
                 }
             }
@@ -147,8 +150,10 @@ public class GridMovementHighlighter : MonoBehaviour
         int validCount = 0;
         int invalidCount = 0;
         
-        // FIXED: Only check positions on the SAME ground object as the unit
-        // Check each position within movement range using Manhattan distance
+        // Get the unit's current world position for height comparison
+        Vector3 unitWorldPos = gridManager.GridToWorldPosition(unitPos, unitGround);
+        
+        // Only check positions on the SAME ground object as the unit
         for (int x = unitPos.x - movementRange; x <= unitPos.x + movementRange; x++)
         {
             for (int y = unitPos.y - movementRange; y <= unitPos.y + movementRange; y++)
@@ -162,23 +167,43 @@ public class GridMovementHighlighter : MonoBehaviour
                 int distance = Mathf.Abs(x - unitPos.x) + Mathf.Abs(y - unitPos.y);
                 if (distance > movementRange) continue;
                 
-                // FIXED: Only check the SAME ground object the unit is on
+                // Check if this grid position exists on the ground object
                 if (gridManager.IsValidGridPosition(checkPos, unitGround))
                 {
-                    if (IsValidMovePosition(checkPos, unitGround))
+                    // Get the world position for this grid cell
+                    Vector3 checkWorldPos = gridManager.GridToWorldPosition(checkPos, unitGround);
+                    
+                    // Check if position is occupied first
+                    bool isOccupied = IsPositionOccupied(checkPos, unitGround);
+                    bool isWalkable = IsPositionWalkable(checkWorldPos);
+                    bool isReachableHeight = IsHeightReachable(unitWorldPos, checkWorldPos);
+                    
+                    // Show highlight if position is within grid bounds
+                    if (isOccupied)
                     {
-                        // Valid move - show blue
-                        CreateMovementHighlight(checkPos, unitGround, true);
-                        validCount++;
-                    }
-                    else
-                    {
-                        // Invalid move (occupied or unreachable) - show red
+                        // Position is occupied - show red
                         CreateMovementHighlight(checkPos, unitGround, false);
                         invalidCount++;
                     }
+                    else if (!isWalkable)
+                    {
+                        // Position is not walkable (obstacle, hole, etc.) - show red
+                        CreateMovementHighlight(checkPos, unitGround, false);
+                        invalidCount++;
+                    }
+                    else if (!isReachableHeight)
+                    {
+                        // Position is too high/low to reach - show red
+                        CreateMovementHighlight(checkPos, unitGround, false);
+                        invalidCount++;
+                    }
+                    else
+                    {
+                        // Position is valid - show blue
+                        CreateMovementHighlight(checkPos, unitGround, true);
+                        validCount++;
+                    }
                 }
-                // REMOVED: Don't check other ground objects - this was causing the cross-platform movement
             }
         }
         
@@ -188,13 +213,95 @@ public class GridMovementHighlighter : MonoBehaviour
         }
     }
     
+    bool IsPositionOccupied(Vector2Int gridPos, GameObject groundObject)
+    {
+        // Check if position is occupied by another player unit
+        if (placementManager != null && placementManager.IsTileOccupied(groundObject, gridPos))
+            return true;
+        
+        // Check if position is occupied by an enemy
+        if (IsEnemyAtPosition(gridPos, groundObject))
+            return true;
+        
+        return false;
+    }
+    
+    bool IsEnemyAtPosition(Vector2Int gridPos, GameObject groundObject)
+    {
+        // Get the world position for this grid cell
+        Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObject);
+        
+        // Check for enemies in a small radius around this position
+        float checkRadius = gridManager.gridSize * 0.4f;
+        Collider[] colliders = Physics.OverlapSphere(worldPos, checkRadius);
+        
+        foreach (Collider col in colliders)
+        {
+            // Simple tag check for enemies
+            if (col.CompareTag("Enemy"))
+            {
+                if (enableDebugLogs)
+                {
+                    Debug.Log($"Found enemy {col.name} at grid position {gridPos}");
+                }
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    bool IsPositionWalkable(Vector3 worldPos)
+    {
+        // Cast a ray down from above to check what's below this position
+        Vector3 rayStart = worldPos + Vector3.up * 5f; // Start 5 units above
+        RaycastHit hit;
+        
+        if (Physics.Raycast(rayStart, Vector3.down, out hit, 10f))
+        {
+            // Check if we hit something that's not walkable
+            GameObject hitObject = hit.collider.gameObject;
+            
+            // If it's on the Ground layer, it's walkable
+            if (hitObject.layer == LayerMask.NameToLayer("Ground"))
+                return true;
+            
+            // Check for specific tags that indicate unwalkable areas
+            if (hitObject.CompareTag("Obstacle") || hitObject.CompareTag("Wall") || hitObject.CompareTag("Unwalkable"))
+                return false;
+            
+            // If it has a renderer and is solid, consider the material/height
+            Renderer renderer = hitObject.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                // If the height difference between the hit point and the expected grid position is too large,
+                // it might be an obstacle or elevated terrain
+                float heightDiff = Mathf.Abs(hit.point.y - worldPos.y);
+                if (heightDiff > 0.5f) // Adjust this threshold as needed
+                {
+                    return false; // Too much height difference, treat as obstacle
+                }
+            }
+        }
+        else
+        {
+            // No ground found - this is a hole or void
+            return false;
+        }
+        
+        return true;
+    }
+    
+    bool IsHeightReachable(Vector3 fromPos, Vector3 toPos)
+    {
+        float heightDifference = Mathf.Abs(toPos.y - fromPos.y);
+        return heightDifference <= maxHeightDifference;
+    }
+    
     bool IsValidMovePosition(Vector2Int gridPos, GameObject groundObject)
     {
-        // Check if position is occupied by another unit
-        if (placementManager != null && placementManager.IsTileOccupied(groundObject, gridPos))
-            return false;
-        
-        // Check if position is reachable (height check)
+        // This method is now broken down into separate checks above
+        // Keep it for compatibility with height checker if it exists
         if (heightChecker != null && !heightChecker.IsPositionReachable(gridPos, groundObject))
             return false;
         
@@ -206,29 +313,37 @@ public class GridMovementHighlighter : MonoBehaviour
         // Get world position for this grid cell
         Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObject);
         
-        // Create a simple quad to fill the grid square
-        GameObject highlight = CreateQuad();
+        // FIXED: Use a simple cylinder instead of a custom quad to avoid shader issues
+        GameObject highlight = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
         highlight.name = $"MovementHighlight_{gridPos.x}_{gridPos.y}_{(isValid ? "Valid" : "Invalid")}";
         
-        // Position it slightly above the ground surface
-        highlight.transform.position = new Vector3(worldPos.x, worldPos.y + 0.02f, worldPos.z);
-        highlight.transform.localScale = new Vector3(gridManager.gridSize * 0.9f, 1f, gridManager.gridSize * 0.9f);
+        // Remove the collider so it doesn't interfere with clicking
+        Destroy(highlight.GetComponent<Collider>());
         
-        // Create material with appropriate color
-        Material highlightMaterial = new Material(Shader.Find("Standard"));
-        highlightMaterial.SetFloat("_Mode", 3); // Transparent
-        highlightMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        highlightMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-        highlightMaterial.SetInt("_ZWrite", 0);
-        highlightMaterial.DisableKeyword("_ALPHATEST_ON");
-        highlightMaterial.EnableKeyword("_ALPHABLEND_ON");
-        highlightMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-        highlightMaterial.renderQueue = 3000;
+        // Position it slightly above the ground surface
+        highlight.transform.position = new Vector3(worldPos.x, worldPos.y + 0.05f, worldPos.z);
+        highlight.transform.localScale = new Vector3(gridManager.gridSize * 0.8f, 0.02f, gridManager.gridSize * 0.8f);
+        
+        // FIXED: Use Unlit/Color shader which is more reliable for solid colors
+        Material highlightMaterial = new Material(Shader.Find("Unlit/Color"));
         
         // Set color based on validity
         Color color = isValid ? validMoveColor : invalidMoveColor;
         color.a = highlightAlpha;
         highlightMaterial.color = color;
+        
+        // Make it transparent if needed
+        if (highlightAlpha < 1f)
+        {
+            highlightMaterial.SetFloat("_Mode", 3);
+            highlightMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            highlightMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            highlightMaterial.SetInt("_ZWrite", 0);
+            highlightMaterial.DisableKeyword("_ALPHATEST_ON");
+            highlightMaterial.EnableKeyword("_ALPHABLEND_ON");
+            highlightMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            highlightMaterial.renderQueue = 3000;
+        }
         
         Renderer renderer = highlight.GetComponent<Renderer>();
         renderer.material = highlightMaterial;
@@ -239,48 +354,6 @@ public class GridMovementHighlighter : MonoBehaviour
         {
             Debug.Log($"Created {(isValid ? "VALID" : "INVALID")} highlight at {worldPos} for grid {gridPos} on {groundObject.name}");
         }
-    }
-    
-    GameObject CreateQuad()
-    {
-        GameObject quad = new GameObject("Quad");
-        
-        MeshFilter meshFilter = quad.AddComponent<MeshFilter>();
-        MeshRenderer meshRenderer = quad.AddComponent<MeshRenderer>();
-        
-        // Create a simple quad mesh
-        Mesh mesh = new Mesh();
-        
-        Vector3[] vertices = new Vector3[4]
-        {
-            new Vector3(-0.5f, 0, -0.5f), // Bottom left
-            new Vector3(0.5f, 0, -0.5f),  // Bottom right
-            new Vector3(-0.5f, 0, 0.5f),  // Top left
-            new Vector3(0.5f, 0, 0.5f)    // Top right
-        };
-        
-        int[] triangles = new int[6]
-        {
-            0, 2, 1,  // First triangle
-            2, 3, 1   // Second triangle
-        };
-        
-        Vector2[] uv = new Vector2[4]
-        {
-            new Vector2(0, 0),
-            new Vector2(1, 0),
-            new Vector2(0, 1),
-            new Vector2(1, 1)
-        };
-        
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.uv = uv;
-        mesh.RecalculateNormals();
-        
-        meshFilter.mesh = mesh;
-        
-        return quad;
     }
     
     void ClearMovementHighlights()

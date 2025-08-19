@@ -80,7 +80,7 @@ public class GridMovementHighlighter : MonoBehaviour
             {
                 if (hit.collider.gameObject == unit && unit.CompareTag("Player"))
                 {
-                    SelectUnit(unit);
+                     SelectUnit(unit);
                     return;
                 }
             }

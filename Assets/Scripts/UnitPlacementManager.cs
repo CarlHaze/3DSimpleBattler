@@ -22,6 +22,7 @@ public class UnitPlacementManager : MonoBehaviour
     [HideInInspector] public GridOverlayManager gridManager;
     private Camera gameCamera;
     private bool inPlacementMode = false;
+    private SimpleUnitSelector unitSelector;
     private GameObject highlightObject;
     private Vector2Int currentGridPos = Vector2Int.one * -1;
     private GameObject currentGroundObject;
@@ -34,6 +35,7 @@ public class UnitPlacementManager : MonoBehaviour
     {
         gridManager = FindFirstObjectByType<GridOverlayManager>();
         gameCamera = Camera.main;
+        unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
         
         if (gameCamera == null)
             gameCamera = FindFirstObjectByType<Camera>();
@@ -41,6 +43,11 @@ public class UnitPlacementManager : MonoBehaviour
         if (gridManager == null)
         {
             Debug.LogError("GridOverlayManager not found!");
+        }
+        
+        if (unitSelector == null)
+        {
+            Debug.LogError("SimpleUnitSelector not found!");
         }
         
         if (gridHighlightPrefab == null)
@@ -286,6 +293,13 @@ public class UnitPlacementManager : MonoBehaviour
     {
         if (currentGroundObject == null) return;
         
+        // Check unit limit first
+        if (unitSelector != null && !unitSelector.CanPlaceMoreUnits())
+        {
+            Debug.Log($"BLOCKED: Unit limit reached! ({unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()})");
+            return;
+        }
+        
         Vector2Int gridPos = currentGridPos;
         GameObject groundObj = currentGroundObject;
         
@@ -329,6 +343,12 @@ public class UnitPlacementManager : MonoBehaviour
         unitInfo.gridPosition = gridPos;
         unitInfo.groundObject = groundObj;
         unitInfo.placementManager = this;
+        
+        // Notify unit selector that a unit was placed
+        if (unitSelector != null)
+        {
+            unitSelector.OnUnitPlaced();
+        }
         
         Debug.Log($"Unit created at {gridPos}");
     }
@@ -403,6 +423,12 @@ public class UnitPlacementManager : MonoBehaviour
             GameObject unit = tileUnits[tileKey];
             SetTileOccupied(groundObj, gridPos, false);
             
+            // Notify unit selector that a unit was removed
+            if (unitSelector != null)
+            {
+                unitSelector.OnUnitRemoved();
+            }
+            
             if (unit != null)
             {
                 Destroy(unit);
@@ -433,7 +459,15 @@ public class UnitGridInfo : MonoBehaviour
     {
         if (placementManager != null)
         {
-            placementManager.RemoveUnit(gridPosition, groundObject);
+            // Get the unit selector to notify of removal
+            SimpleUnitSelector unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
+            if (unitSelector != null)
+            {
+                unitSelector.OnUnitRemoved();
+            }
+            
+            // Clear the tile occupation (but don't destroy the unit since it's already being destroyed)
+            placementManager.SetTileOccupied(groundObject, gridPosition, false);
         }
     }
 }

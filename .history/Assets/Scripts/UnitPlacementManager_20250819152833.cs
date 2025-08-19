@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class UnitPlacementManager : MonoBehaviour
 {
@@ -22,6 +22,7 @@ public class UnitPlacementManager : MonoBehaviour
     [HideInInspector] public GridOverlayManager gridManager;
     private Camera gameCamera;
     private bool inPlacementMode = false;
+    private SimpleUnitSelector unitSelector;
     private GameObject highlightObject;
     private Vector2Int currentGridPos = Vector2Int.one * -1;
     private GameObject currentGroundObject;
@@ -30,15 +31,11 @@ public class UnitPlacementManager : MonoBehaviour
     private Dictionary<string, bool> tileOccupation = new Dictionary<string, bool>();
     private Dictionary<string, GameObject> tileUnits = new Dictionary<string, GameObject>();
     
-    private SimpleUnitSelector unitSelector;
-
-    private HeightValidator heightValidator;
-
     void Start()
     {
         gridManager = FindFirstObjectByType<GridOverlayManager>();
         gameCamera = Camera.main;
-        groundLayerMask = LayerMask.NameToLayer(groundLayerName);
+        unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
         
         if (gameCamera == null)
             gameCamera = FindFirstObjectByType<Camera>();
@@ -48,17 +45,15 @@ public class UnitPlacementManager : MonoBehaviour
             Debug.LogError("GridOverlayManager not found!");
         }
         
+        if (unitSelector == null)
+        {
+            Debug.LogError("SimpleUnitSelector not found!");
+        }
+        
         if (gridHighlightPrefab == null)
         {
             CreateDefaultHighlight();
         }
-        if (generateOnStart)
-        {
-            GenerateGridForAllGroundObjects();
-        }
-
-        unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
-        heightValidator = FindFirstObjectByType<HeightValidator>();
         
         InitializeTileSystem();
     }
@@ -104,18 +99,18 @@ public class UnitPlacementManager : MonoBehaviour
     }
     
     public bool IsTileOccupied(GameObject groundObj, Vector2Int gridPos)
-{
-    string tileKey = GetTileKey(groundObj, gridPos);
-    
-    if (tileOccupation.ContainsKey(tileKey))
     {
-        return tileOccupation[tileKey];
+        string tileKey = GetTileKey(groundObj, gridPos);
+        
+        if (tileOccupation.ContainsKey(tileKey))
+        {
+            return tileOccupation[tileKey];
+        }
+        
+        return true; // If tile not found, treat as occupied for safety
     }
     
-    return true; // If tile not found, treat as occupied for safety
-}
-    
-    void SetTileOccupied(GameObject groundObj, Vector2Int gridPos, bool occupied, GameObject unit = null)
+    public void SetTileOccupied(GameObject groundObj, Vector2Int gridPos, bool occupied, GameObject unit = null)
     {
         string tileKey = GetTileKey(groundObj, gridPos);
         tileOccupation[tileKey] = occupied;
@@ -294,56 +289,46 @@ public class UnitPlacementManager : MonoBehaviour
         currentGroundObject = null;
     }
     
-    oid AttemptUnitPlacement()
-{
-    if (currentGroundObject == null) return;
-    
-    // Check if we can place more units
-    if (unitSelector != null && !unitSelector.CanPlaceMoreUnits())
+    void AttemptUnitPlacement()
     {
-        Debug.Log($"Cannot place more units! Limit reached: {unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()}");
-        return;
-    }
-    
-    Vector2Int gridPos = currentGridPos;
-    GameObject groundObj = currentGroundObject;
-    
-    bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
-    bool isOccupied = IsTileOccupied(groundObj, gridPos);
-    bool isObstructed = IsPositionObstructed(gridPos, groundObj);
-    bool isReachable = heightValidator != null ? heightValidator.IsPositionReachable(gridPos, groundObj) : true; // ADD THIS LINE
-    
-    Debug.Log($"Placement check - Valid: {isValidPosition}, Occupied: {isOccupied}, Obstructed: {isObstructed}, Reachable: {isReachable}");
-    
-    if (isValidPosition && !isOccupied && !isObstructed && isReachable) // ADD isReachable CHECK
-    {
-        SetTileOccupied(groundObj, gridPos, true);
-        CreateUnit(gridPos, groundObj);
+        if (currentGroundObject == null) return;
         
-        // Notify the selector that a unit was placed
-        if (unitSelector != null)
+        // Check unit limit first
+        if (unitSelector != null && !unitSelector.CanPlaceMoreUnits())
         {
-            unitSelector.OnUnitPlaced();
+            Debug.Log($"BLOCKED: Unit limit reached! ({unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()})");
+            return;
         }
         
-        if (exitModeAfterPlacement)
+        Vector2Int gridPos = currentGridPos;
+        GameObject groundObj = currentGroundObject;
+        
+        bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
+        bool isOccupied = IsTileOccupied(groundObj, gridPos);
+        bool isObstructed = IsPositionObstructed(gridPos, groundObj);
+        
+        Debug.Log($"Placement check - Valid: {isValidPosition}, Occupied: {isOccupied}, Obstructed: {isObstructed}");
+        
+        if (isValidPosition && !isOccupied && !isObstructed)
         {
-            ExitMode();
+            SetTileOccupied(groundObj, gridPos, true);
+            CreateUnit(gridPos, groundObj);
+            
+            if (exitModeAfterPlacement)
+            {
+                ExitMode();
+            }
+        }
+        else
+        {
+            if (!isValidPosition)
+                Debug.Log("BLOCKED: Outside grid bounds!");
+            else if (isOccupied)
+                Debug.Log("BLOCKED: Tile occupied!");
+            else if (isObstructed)
+                Debug.Log("BLOCKED: Position obstructed!");
         }
     }
-    else
-    {
-        if (!isValidPosition)
-            Debug.Log("BLOCKED: Outside grid bounds!");
-        else if (isOccupied)
-            Debug.Log("BLOCKED: Tile occupied!");
-        else if (isObstructed)
-            Debug.Log("BLOCKED: Position obstructed!");
-        else if (!isReachable)
-            Debug.Log("BLOCKED: Position not reachable!"); // ADD THIS
-    }
-}
-
     
     void CreateUnit(Vector2Int gridPos, GameObject groundObj)
     {
@@ -358,6 +343,12 @@ public class UnitPlacementManager : MonoBehaviour
         unitInfo.gridPosition = gridPos;
         unitInfo.groundObject = groundObj;
         unitInfo.placementManager = this;
+        
+        // Notify unit selector that a unit was placed
+        if (unitSelector != null)
+        {
+            unitSelector.OnUnitPlaced();
+        }
         
         Debug.Log($"Unit created at {gridPos}");
     }
@@ -421,26 +412,25 @@ public class UnitPlacementManager : MonoBehaviour
         gridHighlightPrefab.SetActive(false);
         DontDestroyOnLoad(gridHighlightPrefab);
     }
-
-    // Public methods
     
+    // Public methods
     public void RemoveUnit(Vector2Int gridPos, GameObject groundObj)
     {
         string tileKey = GetTileKey(groundObj, gridPos);
-
+        
         if (tileUnits.ContainsKey(tileKey))
         {
             GameObject unit = tileUnits[tileKey];
             SetTileOccupied(groundObj, gridPos, false);
-
+            
+            // Notify unit selector that a unit was removed
+            if (unitSelector != null)
+            {
+                unitSelector.OnUnitRemoved();
+            }
+            
             if (unit != null)
             {
-                // Notify the selector that a unit was removed
-                if (unitSelector != null)
-                {
-                    unitSelector.OnUnitRemoved();
-                }
-
                 Destroy(unit);
             }
         }
@@ -469,7 +459,15 @@ public class UnitGridInfo : MonoBehaviour
     {
         if (placementManager != null)
         {
-            placementManager.RemoveUnit(gridPosition, groundObject);
+            // Get the unit selector to notify of removal
+            SimpleUnitSelector unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
+            if (unitSelector != null)
+            {
+                unitSelector.OnUnitRemoved();
+            }
+            
+            // Clear the tile occupation (but don't destroy the unit since it's already being destroyed)
+            placementManager.SetTileOccupied(groundObject, gridPosition, false);
         }
     }
 }
