@@ -23,6 +23,7 @@ public class UnitPlacementManager : MonoBehaviour
     private Camera gameCamera;
     private bool inPlacementMode = false;
     private SimpleUnitSelector unitSelector;
+    private SimpleHeightCheck heightCheck;
     private GameObject highlightObject;
     private Vector2Int currentGridPos = Vector2Int.one * -1;
     private GameObject currentGroundObject;
@@ -36,6 +37,7 @@ public class UnitPlacementManager : MonoBehaviour
         gridManager = FindFirstObjectByType<GridOverlayManager>();
         gameCamera = Camera.main;
         unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
+        heightCheck = FindFirstObjectByType<SimpleHeightCheck>();
         
         if (gameCamera == null)
             gameCamera = FindFirstObjectByType<Camera>();
@@ -48,6 +50,11 @@ public class UnitPlacementManager : MonoBehaviour
         if (unitSelector == null)
         {
             Debug.LogError("SimpleUnitSelector not found!");
+        }
+        
+        if (heightCheck == null)
+        {
+            Debug.LogError("SimpleHeightCheck not found!");
         }
         
         if (gridHighlightPrefab == null)
@@ -247,7 +254,8 @@ public class UnitPlacementManager : MonoBehaviour
         bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
         bool isOccupied = IsTileOccupied(groundObj, gridPos);
         bool isObstructed = IsPositionObstructed(gridPos, groundObj);
-        bool isValid = isValidPosition && !isOccupied && !isObstructed;
+        bool isReachable = heightCheck == null || heightCheck.IsPositionReachable(gridPos, groundObj);
+        bool isValid = isValidPosition && !isOccupied && !isObstructed && isReachable;
         
         Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
         ShowHighlight(worldPos, isValid);
@@ -298,9 +306,9 @@ public class UnitPlacementManager : MonoBehaviour
         bool isValidPosition = gridManager.IsValidGridPosition(gridPos, groundObj);
         bool isOccupied = IsTileOccupied(groundObj, gridPos);
         bool isObstructed = IsPositionObstructed(gridPos, groundObj);
+        bool isReachable = heightCheck == null || heightCheck.IsPositionReachable(gridPos, groundObj);
         
-        
-        if (isValidPosition && !isOccupied && !isObstructed)
+        if (isValidPosition && !isOccupied && !isObstructed && isReachable)
         {
             SetTileOccupied(groundObj, gridPos, true);
             CreateUnit(gridPos, groundObj);

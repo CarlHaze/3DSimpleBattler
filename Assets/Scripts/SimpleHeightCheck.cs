@@ -5,6 +5,7 @@ public class SimpleHeightCheck : MonoBehaviour
     [Header("Height Rules")]
     public float maxHeightToCheck = 2f; // Only check positions above this height
     public float maxClimbHeight = 1.5f; // Maximum height difference we can climb
+    public float maxAbsoluteHeight = 5f; // Maximum absolute height allowed for placement
     public LayerMask groundLayerMask = 1;
     
     [Header("Debug")]
@@ -23,6 +24,13 @@ public class SimpleHeightCheck : MonoBehaviour
         Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObject);
         float currentHeight = GetGroundHeightAtPosition(worldPos);
         
+        // First check: is the position above the absolute maximum height?
+        if (currentHeight > maxAbsoluteHeight)
+        {
+            if (enableDebugLogs)
+                Debug.Log($"Position {gridPos} rejected: height {currentHeight:F2} exceeds maximum allowed height {maxAbsoluteHeight:F2}");
+            return false;
+        }
         
         // If position is not very high, it's probably reachable
         if (currentHeight <= maxHeightToCheck)
@@ -33,6 +41,8 @@ public class SimpleHeightCheck : MonoBehaviour
         // For high positions, check if there's a climbable path from adjacent positions
         bool hasClimbablePath = HasClimbableAdjacentPosition(gridPos, groundObject, currentHeight);
         
+        if (enableDebugLogs && !hasClimbablePath)
+            Debug.Log($"Position {gridPos} rejected: no climbable path found (height: {currentHeight:F2})");
         
         return hasClimbablePath;
     }
