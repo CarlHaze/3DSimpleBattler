@@ -201,10 +201,18 @@ public class UnitPlacementManager : MonoBehaviour
     
     void ToggleMode()
     {
+        // Check if trying to enter placement mode when max units are already placed
+        if (!inPlacementMode && unitSelector != null && !unitSelector.CanPlaceMoreUnits())
+        {
+            SimpleMessageLog.Log($"Maximum units already placed ({unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()})");
+            return;
+        }
+        
         inPlacementMode = !inPlacementMode;
         
         if (inPlacementMode)
         {
+            SimpleMessageLog.Log("Placement mode activated - Click to place unit");
         }
         else
         {
