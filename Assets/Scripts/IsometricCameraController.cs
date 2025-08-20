@@ -17,7 +17,7 @@ public class SimpleTacticsCameraController : MonoBehaviour
     [SerializeField] private float rotationSpeed = 90f;
     [SerializeField] private float tiltSpeed = 45f;
     [SerializeField] private float minTilt = 0f;   // Looking straight down
-    [SerializeField] private float maxTilt = 60f;  // Maximum angle
+    [SerializeField] private float maxTilt = 60f;  // Maximum angle (reserved for future features)
     [SerializeField] private KeyCode rotateLeftKey = KeyCode.Q;
     [SerializeField] private KeyCode rotateRightKey = KeyCode.E;
     [SerializeField] private KeyCode tiltUpKey = KeyCode.R;
