@@ -5,6 +5,8 @@ using System.Linq;
 public class HeightAwarePathfinder : MonoBehaviour
 {
     [Header("Pathfinding Settings")]
+    [SerializeField] private bool enableDiagonalMovement = false; // DISABLED for more predictable movement
+    [SerializeField] private float diagonalCost = 1.414f; // sqrt(2)
     [SerializeField] private float straightCost = 1f;
     [SerializeField] private int maxSearchNodes = 1000; // Prevent infinite loops
     [SerializeField] private bool debugPathfinding = true; // ENABLED for debugging
@@ -285,17 +287,26 @@ public class HeightAwarePathfinder : MonoBehaviour
     }
     
     /// <summary>
-    /// Get valid neighboring positions for pathfinding (cardinal directions only)
+    /// Get valid neighboring positions for pathfinding
     /// </summary>
     private List<Vector2Int> GetNeighbors(Vector2Int position)
     {
         List<Vector2Int> neighbors = new List<Vector2Int>();
         
-        // Cardinal directions only (up, down, left, right)
+        // Cardinal directions (up, down, left, right)
         neighbors.Add(new Vector2Int(position.x, position.y + 1)); // Up
         neighbors.Add(new Vector2Int(position.x, position.y - 1)); // Down
         neighbors.Add(new Vector2Int(position.x - 1, position.y)); // Left
         neighbors.Add(new Vector2Int(position.x + 1, position.y)); // Right
+        
+        // Diagonal directions (if enabled)
+        if (enableDiagonalMovement)
+        {
+            neighbors.Add(new Vector2Int(position.x - 1, position.y + 1)); // Up-Left
+            neighbors.Add(new Vector2Int(position.x + 1, position.y + 1)); // Up-Right
+            neighbors.Add(new Vector2Int(position.x - 1, position.y - 1)); // Down-Left
+            neighbors.Add(new Vector2Int(position.x + 1, position.y - 1)); // Down-Right
+        }
         
         return neighbors;
     }
@@ -311,8 +322,9 @@ public class HeightAwarePathfinder : MonoBehaviour
             return -1f; // Invalid move
         }
         
-        // Base cost (cardinal movement only)
-        float baseCost = straightCost;
+        // Base cost (diagonal vs straight)
+        bool isDiagonal = Mathf.Abs(to.x - from.x) == 1 && Mathf.Abs(to.y - from.y) == 1;
+        float baseCost = isDiagonal ? diagonalCost : straightCost;
         
         // Smart height penalty - encourage climbing over small obstacles, discourage long detours
         if (heightDetector != null)
@@ -432,15 +444,25 @@ public class HeightAwarePathfinder : MonoBehaviour
     }
     
     /// <summary>
-    /// Calculate heuristic cost (Manhattan distance for cardinal movement only)
+    /// Calculate heuristic cost (Manhattan distance for grid-based movement)
     /// </summary>
     private float GetHeuristic(Vector2Int from, Vector2Int to)
     {
         int dx = Mathf.Abs(to.x - from.x);
         int dy = Mathf.Abs(to.y - from.y);
         
-        // Manhattan distance for cardinal movement only
-        return (dx + dy) * straightCost;
+        if (enableDiagonalMovement)
+        {
+            // For diagonal movement, use diagonal distance
+            int diagonal = Mathf.Min(dx, dy);
+            int straight = Mathf.Max(dx, dy) - diagonal;
+            return diagonal * diagonalCost + straight * straightCost;
+        }
+        else
+        {
+            // Manhattan distance for cardinal movement only
+            return (dx + dy) * straightCost;
+        }
     }
     
     /// <summary>

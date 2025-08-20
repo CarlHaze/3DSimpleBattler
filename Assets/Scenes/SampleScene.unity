@@ -679,7 +679,6 @@ MonoBehaviour:
   rotationSpeed: 90
   tiltSpeed: 45
   minTilt: 0
-  maxTilt: 90
   rotateLeftKey: 113
   rotateRightKey: 101
   tiltUpKey: 114
@@ -1911,14 +1910,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d27b857e49c8a84888cd0c8c64adc86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableDiagonalMovement: 1
-  diagonalCost: 1.414
   straightCost: 1
   maxSearchNodes: 1000
   debugPathfinding: 0
   maxClimbHeight: 1.5
   maxFallHeight: 3
-  heightPenalty: 2
+  heightPenalty: 0
+  preferDirectRoutes: 1
+  gapDetectionThreshold: 1
+  minimumGroundHeight: 0.2
+  enableGapDetection: 1
 --- !u!1 &1594314774
 GameObject:
   m_ObjectHideFlags: 0
