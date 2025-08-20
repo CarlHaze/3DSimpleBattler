@@ -22,17 +22,6 @@ public class SimpleTacticsCameraController : MonoBehaviour
     [SerializeField] private KeyCode rotateRightKey = KeyCode.E;
     [SerializeField] private KeyCode tiltUpKey = KeyCode.R;
     [SerializeField] private KeyCode tiltDownKey = KeyCode.F;
-    [SerializeField] private KeyCode resetCameraKey = KeyCode.T;
-    
-    [Header("Rotation Settings")]
-    [SerializeField] private bool snapRotation = true;
-    [SerializeField] private float snapAngle = 45f; // 45 or 90 degrees
-    
-    [Header("Vertical Panning")]
-    [SerializeField] private bool enableVerticalPan = true;
-    [SerializeField] private float verticalPanSpeed = 8f;
-    [SerializeField] private KeyCode panUpKey = KeyCode.Space;
-    [SerializeField] private KeyCode panDownKey = KeyCode.LeftControl;
     
     [Header("Input Settings")]
     [SerializeField] private bool enableKeyboardPan = true;
@@ -54,14 +43,6 @@ public class SimpleTacticsCameraController : MonoBehaviour
     private bool isDragging = false;
     private float currentYRotation = 0f;
     private float currentXRotation = 90f; // Start looking straight down
-    private float targetYRotation = 0f;
-    private bool isRotating = false;
-    
-    // Store initial camera state for reset
-    private Vector3 initialPosition;
-    private Quaternion initialRotation;
-    private float initialXRotation;
-    private float initialYRotation;
     
     void Start()
     {
@@ -78,43 +59,25 @@ public class SimpleTacticsCameraController : MonoBehaviour
             return;
         }
         
-        // Get current rotation values from the transform's existing rotation
-        Vector3 currentEuler = transform.rotation.eulerAngles;
-        
-        // Normalize the X rotation to avoid gimbal lock issues
-        currentXRotation = NormalizeAngle(currentEuler.x);
-        currentYRotation = NormalizeAngle(currentEuler.y);
-        
-        // Store initial state for reset functionality
-        initialPosition = transform.position;
-        initialRotation = transform.rotation;
-        initialXRotation = currentXRotation;
-        initialYRotation = currentYRotation;
-        
         // Keep it in perspective mode (don't force orthographic)
         cam.orthographic = false;
         
-        Debug.Log($"Camera initialized. Position: {initialPosition}, X rotation: {currentXRotation:F1}°, Y rotation: {currentYRotation:F1}°");
+        // Set initial rotation to look straight down
+        transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
+        
+        Debug.Log("Camera initialized in perspective mode, looking straight down");
     }
     
     void Update()
     {
         HandleMovement();
-        HandleVerticalPanning();
         HandleZoom();
         HandleRotation();
         HandleTilt();
-        HandleReset();
         
         if (useBounds)
         {
             ApplyBounds();
-        }
-        
-        // Update rotation smoothly if snapping
-        if (snapRotation && isRotating)
-        {
-            UpdateSmoothRotation();
         }
     }
     
@@ -223,40 +186,25 @@ public class SimpleTacticsCameraController : MonoBehaviour
     
     void HandleRotation()
     {
-        if (!enableRotation || isRotating) return;
+        if (!enableRotation) return;
         
-        bool rotateLeft = Input.GetKeyDown(rotateLeftKey);
-        bool rotateRight = Input.GetKeyDown(rotateRightKey);
+        float rotationInput = 0f;
         
-        if (rotateLeft || rotateRight)
+        if (Input.GetKey(rotateLeftKey))
+            rotationInput = -1f;
+        else if (Input.GetKey(rotateRightKey))
+            rotationInput = 1f;
+        
+        if (Mathf.Abs(rotationInput) > 0.01f)
         {
-            if (snapRotation)
-            {
-                // Snap rotation to set increments
-                float rotationAmount = rotateLeft ? -snapAngle : snapAngle;
-                targetYRotation = currentYRotation + rotationAmount;
-                
-                // Normalize to 0-360 range
-                while (targetYRotation < 0f) targetYRotation += 360f;
-                while (targetYRotation >= 360f) targetYRotation -= 360f;
-                
-                isRotating = true;
-                
-                Debug.Log($"Rotating to {targetYRotation} degrees");
-            }
-            else
-            {
-                // Continuous rotation
-                float rotationInput = rotateLeft ? -1f : 1f;
-                currentYRotation += rotationInput * rotationSpeed * Time.deltaTime;
-                
-                // Keep rotation in 0-360 range
-                if (currentYRotation < 0f) currentYRotation += 360f;
-                if (currentYRotation >= 360f) currentYRotation -= 360f;
-                
-                // Apply rotation immediately
-                transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
-            }
+            currentYRotation += rotationInput * rotationSpeed * Time.deltaTime;
+            
+            // Keep rotation in 0-360 range
+            if (currentYRotation < 0f) currentYRotation += 360f;
+            if (currentYRotation >= 360f) currentYRotation -= 360f;
+            
+            // Apply rotation
+            transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
         }
     }
     
@@ -267,29 +215,17 @@ public class SimpleTacticsCameraController : MonoBehaviour
         float tiltInput = 0f;
         
         if (Input.GetKey(tiltUpKey))
-            tiltInput = -1f; // Tilt up (look more forward - decrease X rotation)
+            tiltInput = -1f; // Tilt up (look more forward)
         else if (Input.GetKey(tiltDownKey))
-            tiltInput = 1f;  // Tilt down (look more down - increase X rotation)
+            tiltInput = 1f;  // Tilt down (look more down)
         
         if (Mathf.Abs(tiltInput) > 0.01f)
         {
-            float newXRotation = currentXRotation + tiltInput * tiltSpeed * Time.deltaTime;
+            currentXRotation += tiltInput * tiltSpeed * Time.deltaTime;
+            currentXRotation = Mathf.Clamp(currentXRotation, 90f - maxTilt, 90f - minTilt);
             
-            // Set limits: 90° is straight down (maximum down), lower values look more forward
-            float absoluteMinTilt = Mathf.Max(30f, minTilt);   // Looking forward limit (30° minimum)
-            float absoluteMaxTilt = 90f;                       // Looking straight down limit (90° maximum)
-            
-            // Clamp the rotation - can't go below 30° or above 90°
-            newXRotation = Mathf.Clamp(newXRotation, absoluteMinTilt, absoluteMaxTilt);
-            
-            // Only update if the value actually changed
-            if (Mathf.Abs(newXRotation - currentXRotation) > 0.001f)
-            {
-                currentXRotation = newXRotation;
-                
-                // Apply rotation
-                transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
-            }
+            // Apply rotation
+            transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
         }
     }
     
@@ -305,52 +241,6 @@ public class SimpleTacticsCameraController : MonoBehaviour
             mapCenter.z + mapBounds.y * 0.5f);
         
         transform.position = pos;
-    }
-    
-    void HandleVerticalPanning()
-    {
-        if (!enableVerticalPan) return;
-        
-        float verticalInput = 0f;
-        
-        if (Input.GetKey(panUpKey))
-            verticalInput = 1f;
-        else if (Input.GetKey(panDownKey))
-            verticalInput = -1f;
-        
-        if (Mathf.Abs(verticalInput) > 0.01f)
-        {
-            Vector3 pos = transform.position;
-            pos.y += verticalInput * verticalPanSpeed * Time.deltaTime;
-            pos.y = Mathf.Clamp(pos.y, minHeight, maxHeight);
-            transform.position = pos;
-        }
-    }
-    
-    void HandleReset()
-    {
-        if (Input.GetKeyDown(resetCameraKey))
-        {
-            ResetToStartingPosition();
-            Debug.Log("Camera reset to starting position");
-        }
-    }
-    
-    void UpdateSmoothRotation()
-    {
-        float rotationSpeed = 180f; // degrees per second for smooth rotation
-        
-        currentYRotation = Mathf.MoveTowardsAngle(currentYRotation, targetYRotation, rotationSpeed * Time.deltaTime);
-        
-        // Apply the rotation
-        transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
-        
-        // Check if we've reached the target
-        if (Mathf.Approximately(currentYRotation, targetYRotation))
-        {
-            currentYRotation = targetYRotation;
-            isRotating = false;
-        }
     }
     
     // Public methods
@@ -377,39 +267,10 @@ public class SimpleTacticsCameraController : MonoBehaviour
         transform.position = endPos;
     }
     
-    public void ResetToStartingPosition()
-    {
-        // Reset position to initial position
-        transform.position = initialPosition;
-        
-        // Reset rotation values to initial state
-        currentXRotation = initialXRotation;
-        currentYRotation = initialYRotation;
-        targetYRotation = initialYRotation;
-        isRotating = false;
-        
-        // Apply the initial rotation
-        transform.rotation = initialRotation;
-        
-        Debug.Log($"Camera reset to starting position: {initialPosition}, X: {currentXRotation:F1}°, Y: {currentYRotation:F1}°");
-    }
-    
-    // Helper method to normalize angles to prevent gimbal lock issues
-    float NormalizeAngle(float angle)
-    {
-        // Convert Unity's 0-360 range to a more intuitive -180 to 180 range for X rotation
-        if (angle > 180f)
-            angle -= 360f;
-        return angle;
-    }
-    
-    // Keep the old method for backward compatibility
     public void ResetToTopDown()
     {
         currentXRotation = 90f;
         currentYRotation = 0f;
-        targetYRotation = 0f;
-        isRotating = false;
         transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
     }
     

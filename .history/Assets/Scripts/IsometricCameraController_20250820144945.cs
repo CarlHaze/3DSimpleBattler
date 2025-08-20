@@ -57,12 +57,6 @@ public class SimpleTacticsCameraController : MonoBehaviour
     private float targetYRotation = 0f;
     private bool isRotating = false;
     
-    // Store initial camera state for reset
-    private Vector3 initialPosition;
-    private Quaternion initialRotation;
-    private float initialXRotation;
-    private float initialYRotation;
-    
     void Start()
     {
         InitializeCamera();
@@ -78,23 +72,13 @@ public class SimpleTacticsCameraController : MonoBehaviour
             return;
         }
         
-        // Get current rotation values from the transform's existing rotation
-        Vector3 currentEuler = transform.rotation.eulerAngles;
-        
-        // Normalize the X rotation to avoid gimbal lock issues
-        currentXRotation = NormalizeAngle(currentEuler.x);
-        currentYRotation = NormalizeAngle(currentEuler.y);
-        
-        // Store initial state for reset functionality
-        initialPosition = transform.position;
-        initialRotation = transform.rotation;
-        initialXRotation = currentXRotation;
-        initialYRotation = currentYRotation;
-        
         // Keep it in perspective mode (don't force orthographic)
         cam.orthographic = false;
         
-        Debug.Log($"Camera initialized. Position: {initialPosition}, X rotation: {currentXRotation:F1}°, Y rotation: {currentYRotation:F1}°");
+        // Set initial rotation to look straight down
+        transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
+        
+        Debug.Log("Camera initialized in perspective mode, looking straight down");
     }
     
     void Update()
@@ -267,29 +251,17 @@ public class SimpleTacticsCameraController : MonoBehaviour
         float tiltInput = 0f;
         
         if (Input.GetKey(tiltUpKey))
-            tiltInput = -1f; // Tilt up (look more forward - decrease X rotation)
+            tiltInput = -1f; // Tilt up (look more forward)
         else if (Input.GetKey(tiltDownKey))
-            tiltInput = 1f;  // Tilt down (look more down - increase X rotation)
+            tiltInput = 1f;  // Tilt down (look more down)
         
         if (Mathf.Abs(tiltInput) > 0.01f)
         {
-            float newXRotation = currentXRotation + tiltInput * tiltSpeed * Time.deltaTime;
+            currentXRotation += tiltInput * tiltSpeed * Time.deltaTime;
+            currentXRotation = Mathf.Clamp(currentXRotation, 90f - maxTilt, 90f - minTilt);
             
-            // Set limits: 90° is straight down (maximum down), lower values look more forward
-            float absoluteMinTilt = Mathf.Max(30f, minTilt);   // Looking forward limit (30° minimum)
-            float absoluteMaxTilt = 90f;                       // Looking straight down limit (90° maximum)
-            
-            // Clamp the rotation - can't go below 30° or above 90°
-            newXRotation = Mathf.Clamp(newXRotation, absoluteMinTilt, absoluteMaxTilt);
-            
-            // Only update if the value actually changed
-            if (Mathf.Abs(newXRotation - currentXRotation) > 0.001f)
-            {
-                currentXRotation = newXRotation;
-                
-                // Apply rotation
-                transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
-            }
+            // Apply rotation
+            transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
         }
     }
     
@@ -331,8 +303,8 @@ public class SimpleTacticsCameraController : MonoBehaviour
     {
         if (Input.GetKeyDown(resetCameraKey))
         {
-            ResetToStartingPosition();
-            Debug.Log("Camera reset to starting position");
+            ResetToTopDown();
+            Debug.Log("Camera reset to top-down view");
         }
     }
     
@@ -377,33 +349,6 @@ public class SimpleTacticsCameraController : MonoBehaviour
         transform.position = endPos;
     }
     
-    public void ResetToStartingPosition()
-    {
-        // Reset position to initial position
-        transform.position = initialPosition;
-        
-        // Reset rotation values to initial state
-        currentXRotation = initialXRotation;
-        currentYRotation = initialYRotation;
-        targetYRotation = initialYRotation;
-        isRotating = false;
-        
-        // Apply the initial rotation
-        transform.rotation = initialRotation;
-        
-        Debug.Log($"Camera reset to starting position: {initialPosition}, X: {currentXRotation:F1}°, Y: {currentYRotation:F1}°");
-    }
-    
-    // Helper method to normalize angles to prevent gimbal lock issues
-    float NormalizeAngle(float angle)
-    {
-        // Convert Unity's 0-360 range to a more intuitive -180 to 180 range for X rotation
-        if (angle > 180f)
-            angle -= 360f;
-        return angle;
-    }
-    
-    // Keep the old method for backward compatibility
     public void ResetToTopDown()
     {
         currentXRotation = 90f;

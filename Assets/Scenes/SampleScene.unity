@@ -531,6 +531,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -605,13 +606,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.26105326, y: -0, z: -0, w: 0.9653244}
-  m_LocalPosition: {x: 0, y: 5.35, z: -8.8}
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0.7071068, w: 0}
+  m_LocalPosition: {x: 0.24, y: 9.78, z: 0.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 30.265, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 180}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -656,6 +657,50 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78b4fb0ced2f2c44cafcb6868e7b7b78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panSpeed: 5
+  mousePanSpeed: 2
+  edgePanSpeed: 3
+  edgePanBorder: 10
+  zoomSpeed: 5
+  minHeight: 5
+  maxHeight: 12
+  rotationSpeed: 90
+  tiltSpeed: 45
+  minTilt: 0
+  maxTilt: 90
+  rotateLeftKey: 113
+  rotateRightKey: 101
+  tiltUpKey: 114
+  tiltDownKey: 102
+  resetCameraKey: 116
+  snapRotation: 1
+  snapAngle: 45
+  enableVerticalPan: 1
+  verticalPanSpeed: 8
+  panUpKey: 32
+  panDownKey: 306
+  enableKeyboardPan: 1
+  enableMouseDragPan: 1
+  enableEdgePan: 0
+  enableZoom: 1
+  enableRotation: 1
+  enableTilt: 1
+  dragKey: 325
+  useBounds: 1
+  mapBounds: {x: 20, y: 20}
+  mapCenter: {x: 0, y: 0, z: 0}
 --- !u!1 &372372969
 GameObject:
   m_ObjectHideFlags: 0
@@ -1037,7 +1082,7 @@ MonoBehaviour:
     m_Bits: 136
   enemyHeightOffset: 0
   spawnOnStart: 1
-  spawnKey: 101
+  spawnKey: 0
   minDistanceFromUnits: 2
 --- !u!4 &548091636
 Transform:
@@ -2039,6 +2084,37 @@ MonoBehaviour:
   maxHeightDifference: 1.5
   enableDebugLogs: 1
   clickDebounceTime: 0.1
+--- !u!1 &1754492931
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1754492932}
+  m_Layer: 0
+  m_Name: CamFocus
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1754492932
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1754492931}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 6, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1778389199
 GameObject:
   m_ObjectHideFlags: 0
@@ -2191,3 +2267,4 @@ SceneRoots:
   - {fileID: 432886958}
   - {fileID: 76961345}
   - {fileID: 12776281}
+  - {fileID: 1754492932}
