@@ -1,43 +1,35 @@
 # Unit Outline System Setup Guide
 
 ## What You Get
-- **Green pulsing outline** for selected units
-- **Yellow outline** for active units (future turn system)
+- **Green pulsing outline** for selected units  
+- **No custom shaders required** - works with any Unity version
 - **Customizable colors** and animation settings
-- **Performance optimized** shader-based rendering
+- **Simple and reliable** mesh duplication approach
 
 ## Setup Instructions
 
-### 1. Create Required Folders
-```
-Assets/
-├── Shaders/          (already created)
-└── Scripts/          (already exists)
-```
-
-### 2. Add UnitOutlineController to Scene
+### 1. Add SimpleUnitOutline to Scene
 
 **Option A: Add to existing GameObject**
 1. Select your main game manager GameObject
-2. Add Component → Scripts → Unit Outline Controller
+2. Add Component → Scripts → Simple Unit Outline
 
 **Option B: Create new GameObject**
 1. Create Empty GameObject → name it "OutlineManager"
-2. Add Component → Scripts → Unit Outline Controller
+2. Add Component → Scripts → Simple Unit Outline
 
-### 3. Configure Settings
+### 2. Configure Settings
 
-In the UnitOutlineController inspector:
+In the SimpleUnitOutline inspector:
 
 **Outline Settings:**
-- **Selected Outline Color**: Green (0, 1, 0, 1) - for selected units
-- **Active Unit Outline Color**: Yellow (1, 1, 0, 1) - for turn system
-- **Outline Width**: 0.008 (adjust for your unit scale)
+- **Outline Color**: Green (0, 1, 0, 1) - color of the outline
+- **Outline Width**: 0.02 (how much bigger the outline is)
 - **Animate Outline**: ✓ Checked for pulsing effect
 - **Pulse Speed**: 2.0 (how fast the pulse animation)
-- **Min/Max Pulse Width**: 0.005 to 0.012 (pulse range)
+- **Min/Max Scale**: 0.98 to 1.05 (pulse scale range)
 
-### 4. Test the System
+### 3. Test the System
 
 1. **Enter Play Mode**
 2. **Press P** to enter placement mode
@@ -53,15 +45,16 @@ In the UnitOutlineController inspector:
 - Deselecting removes the outline
 - Only one unit can have a selection outline at a time
 
-### Shader Technology
-- Uses a two-pass shader: outline pass + normal rendering pass
-- Expands vertices along normals for the outline effect
-- Preserves original unit materials and textures
+### Mesh Duplication Technology
+- Creates a slightly larger copy of the unit's mesh
+- Colors it with a solid color material
+- Parents it to the original unit and scales it for pulsing
+- No shaders required - works with any Unity version
 
-### Future Turn System Support
-- `SetActiveUnit()` method ready for turn-based gameplay
-- Different colors for selected vs active units
-- Easy to extend for team colors or status effects
+### Simple and Reliable
+- Uses standard Unity materials (Unlit/Color)
+- No render pipeline dependencies
+- Easy to customize and debug
 
 ## Customization Options
 
