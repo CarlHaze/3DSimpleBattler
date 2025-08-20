@@ -366,7 +366,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 1
-  m_AdditionalShaderChannelsFlag: 1
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -1815,10 +1815,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHeightToCheck: 2
   maxClimbHeight: 1.5
+  maxAbsoluteHeight: 5
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 8
-  enableDebugLogs: 0
+  enableDebugLogs: 1
 --- !u!1 &1594314774
 GameObject:
   m_ObjectHideFlags: 0
@@ -2028,6 +2029,7 @@ MonoBehaviour:
   highlightAlpha: 0.7
   maxHeightDifference: 1.5
   enableDebugLogs: 1
+  clickDebounceTime: 0.1
 --- !u!1 &1778389199
 GameObject:
   m_ObjectHideFlags: 0
