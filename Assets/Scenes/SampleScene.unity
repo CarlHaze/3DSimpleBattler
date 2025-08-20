@@ -1028,10 +1028,13 @@ MonoBehaviour:
   enemiesToSpawn: 3
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 9
+    m_Bits: 137
+  gridLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
   obstructionLayerMask:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 136
   enemyHeightOffset: 0
   spawnOnStart: 1
   spawnKey: 101
@@ -1604,10 +1607,13 @@ MonoBehaviour:
   activationKey: 112
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 9
+    m_Bits: 137
+  gridLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
   obstructionLayerMask:
     serializedVersion: 2
-    m_Bits: 72
+    m_Bits: 200
   unitHeightOffset: 0
   exitModeAfterPlacement: 1
   highlightMaterial: {fileID: 2100000, guid: dbe28a944dfd65748ba0341fd05a471c, type: 2}
@@ -1819,6 +1825,9 @@ MonoBehaviour:
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 8
+  gridLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
   enableDebugLogs: 1
 --- !u!1 &1594314774
 GameObject:
@@ -1961,7 +1970,7 @@ GameObject:
   - component: {fileID: 1745696331}
   - component: {fileID: 1745696330}
   - component: {fileID: 1745696332}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GridManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1991,7 +2000,7 @@ MonoBehaviour:
   raycastHeight: 20
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 136
   debugRaycasts: 1
 --- !u!4 &1745696331
 Transform:
@@ -2142,7 +2151,7 @@ MonoBehaviour:
   moveSpeed: 2
   groundLayerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 136
   validMoveColor: {r: 0, g: 0, b: 1, a: 1}
   blockedMoveColor: {r: 1, g: 0, b: 0, a: 1}
   movementHighlightMaterial: {fileID: 2100000, guid: d2eeb26d31a75064693dbcd2222cc504, type: 2}
