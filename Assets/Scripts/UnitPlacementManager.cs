@@ -342,18 +342,21 @@ public class UnitPlacementManager : MonoBehaviour
     {
         Vector3 worldPos;
         
-        // Use terrain height detector if available, otherwise fallback to grid manager
+        // Always use grid manager for basic position, then adjust height if needed
+        worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
+        
+        // Optionally use terrain height detector to get more accurate height
         if (terrainHeightDetector != null)
         {
-            worldPos = terrainHeightDetector.GetGroundPositionAtGridPosition(gridPos, groundObj);
-        }
-        else
-        {
-            worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
+            float accurateHeight = terrainHeightDetector.GetGroundHeightAtGridPosition(gridPos, groundObj);
+            worldPos.y = accurateHeight;
         }
         
         float heightOffset = CalculateUnitHeightOffset();
         worldPos.y += heightOffset;
+        
+        // Debug logging to help identify placement issues
+        Debug.Log($"Placing unit at grid {gridPos} -> world {worldPos} on {groundObj.name}");
         
         GameObject newUnit = Instantiate(playerPrefab, worldPos, Quaternion.identity);
         SetTileOccupied(groundObj, gridPos, true, newUnit);
