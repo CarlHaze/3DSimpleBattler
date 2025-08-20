@@ -20,6 +20,8 @@ public class UnitMovementManager : MonoBehaviour
     private SimpleHeightCheck heightChecker;
     private SimpleUnitSelector unitSelector;
     private SimpleUnitOutline outlineController;
+    private TerrainHeightDetector terrainHeightDetector;
+    private HeightAwarePathfinder pathfinder;
     
     // Current selection state
     private GameObject selectedUnit;
@@ -41,6 +43,8 @@ public class UnitMovementManager : MonoBehaviour
         heightChecker = FindFirstObjectByType<SimpleHeightCheck>();
         unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
         outlineController = FindFirstObjectByType<SimpleUnitOutline>();
+        terrainHeightDetector = FindFirstObjectByType<TerrainHeightDetector>();
+        pathfinder = FindFirstObjectByType<HeightAwarePathfinder>();
 
         if (gridManager == null)
             Debug.LogError("GridOverlayManager not found!");
@@ -50,6 +54,10 @@ public class UnitMovementManager : MonoBehaviour
             Debug.LogError("SimpleHeightCheck not found!");
         if (outlineController == null)
             Debug.LogWarning("SimpleUnitOutline not found - unit outlines will not work!");
+        if (terrainHeightDetector == null)
+            Debug.LogWarning("TerrainHeightDetector not found - units may not follow terrain height properly!");
+        if (pathfinder == null)
+            Debug.LogWarning("HeightAwarePathfinder not found - units may clip through elevated terrain!");
         
     }
     
@@ -165,7 +173,58 @@ public class UnitMovementManager : MonoBehaviour
     {
         validMovePositions.Clear();
         
-        // Calculate all positions within movement range
+        // Use pathfinder to get reachable positions if available
+        if (pathfinder != null)
+        {
+            List<Vector2Int> reachablePositions = pathfinder.GetReachablePositions(unitPosition, groundObject, movementRange);
+            
+            foreach (Vector2Int pos in reachablePositions)
+            {
+                if (IsBasicValidMovePosition(pos, groundObject, false)) // Don't use pathfinding here since we already got reachable positions
+                {
+                    validMovePositions.Add(pos);
+                    CreateMovementHighlight(pos, groundObject, true);
+                }
+            }
+            
+            // Also show some blocked positions for visual feedback
+            ShowBlockedPositions(unitPosition, groundObject);
+        }
+        else
+        {
+            // Fallback to old grid-based method
+            for (int x = -movementRange; x <= movementRange; x++)
+            {
+                for (int z = -movementRange; z <= movementRange; z++)
+                {
+                    // Skip the unit's current position
+                    if (x == 0 && z == 0) continue;
+                    
+                    // Use Manhattan distance for movement range
+                    int distance = Mathf.Abs(x) + Mathf.Abs(z);
+                    if (distance > movementRange) continue;
+                    
+                    Vector2Int checkPos = unitPosition + new Vector2Int(x, z);
+                    
+                    // Check if position is valid and not occupied
+                    if (IsValidMovePosition(checkPos, groundObject))
+                    {
+                        validMovePositions.Add(checkPos);
+                        CreateMovementHighlight(checkPos, groundObject, true);
+                    }
+                    else if (gridManager.IsValidGridPosition(checkPos, groundObject))
+                    {
+                        // Show red highlight for blocked but valid grid positions
+                        CreateMovementHighlight(checkPos, groundObject, false);
+                    }
+                }
+            }
+        }
+    }
+    
+    void ShowBlockedPositions(Vector2Int unitPosition, GameObject groundObject)
+    {
+        // Show some blocked positions within range for visual context
         for (int x = -movementRange; x <= movementRange; x++)
         {
             for (int z = -movementRange; z <= movementRange; z++)
@@ -179,16 +238,16 @@ public class UnitMovementManager : MonoBehaviour
                 
                 Vector2Int checkPos = unitPosition + new Vector2Int(x, z);
                 
-                // Check if position is valid and not occupied
-                if (IsValidMovePosition(checkPos, groundObject))
+                // Only show if it's a valid grid position but not reachable
+                if (gridManager.IsValidGridPosition(checkPos, groundObject) && !validMovePositions.Contains(checkPos))
                 {
-                    validMovePositions.Add(checkPos);
-                    CreateMovementHighlight(checkPos, groundObject, true);
-                }
-                else if (gridManager.IsValidGridPosition(checkPos, groundObject))
-                {
-                    // Show red highlight for blocked but valid grid positions
-                    CreateMovementHighlight(checkPos, groundObject, false);
+                    // Check if it's blocked by something visible (enemies, other units)
+                    bool blockedByUnits = placementManager.IsTileOccupied(groundObject, checkPos) || IsEnemyAtPosition(checkPos, groundObject);
+                    if (blockedByUnits)
+                    {
+                        // This position is blocked by units/enemies, show as red
+                        CreateMovementHighlight(checkPos, groundObject, false);
+                    }
                 }
             }
         }
@@ -212,9 +271,47 @@ public class UnitMovementManager : MonoBehaviour
         if (heightChecker != null && !heightChecker.IsPositionReachable(gridPos, groundObject))
             return false;
         
+        // NEW: Use terrain height detector for more accurate height validation
+        if (terrainHeightDetector != null && selectedUnit != null)
+        {
+            UnitGridInfo unitInfo = selectedUnit.GetComponent<UnitGridInfo>();
+            if (unitInfo != null)
+            {
+                // Check if unit can move from current position to target position based on terrain height
+                if (!terrainHeightDetector.CanMoveFromGridToGrid(unitInfo.gridPosition, gridPos, groundObject))
+                {
+                    return false;
+                }
+            }
+        }
+        
         // Check if there's a clear path to this position (no enemies blocking the way)
         if (selectedUnit != null && !HasClearPathToPosition(gridPos, groundObject))
             return false;
+        
+        return true;
+    }
+    
+    bool IsBasicValidMovePosition(Vector2Int gridPos, GameObject groundObject, bool checkPathfinding = true)
+    {
+        // Check if position is within grid bounds
+        if (!gridManager.IsValidGridPosition(gridPos, groundObject))
+            return false;
+        
+        // Check if position is occupied by units
+        if (placementManager.IsTileOccupied(groundObject, gridPos))
+            return false;
+        
+        // Check if position is occupied by enemies
+        if (IsEnemyAtPosition(gridPos, groundObject))
+            return false;
+        
+        // Check if position is reachable (height restrictions)
+        if (heightChecker != null && !heightChecker.IsPositionReachable(gridPos, groundObject))
+            return false;
+        
+        // NOTE: Pathfinding validation is handled separately in ShowMovementRange for performance
+        // Don't do individual pathfinding checks here as it's too expensive
         
         return true;
     }
@@ -509,15 +606,41 @@ public class UnitMovementManager : MonoBehaviour
         // Clear old position in placement manager
         placementManager.SetTileOccupied(unitInfo.groundObject, unitInfo.gridPosition, false);
         
-        // Calculate new world position
-        Vector3 targetWorldPos = gridManager.GridToWorldPosition(targetGridPos, currentGroundObject);
+        // Calculate new world position using terrain height detection
+        Vector3 targetWorldPos;
+        if (terrainHeightDetector != null)
+        {
+            targetWorldPos = terrainHeightDetector.GetGroundPositionAtGridPosition(targetGridPos, currentGroundObject);
+        }
+        else
+        {
+            targetWorldPos = gridManager.GridToWorldPosition(targetGridPos, currentGroundObject);
+        }
         
         // Add height offset for unit
         float heightOffset = CalculateUnitHeightOffset(selectedUnit);
         targetWorldPos.y += heightOffset;
         
-        // Start movement animation
-        StartCoroutine(AnimateMovement(selectedUnit, targetWorldPos));
+        // Use pathfinder to get the actual path if available
+        if (pathfinder != null)
+        {
+            List<Vector2Int> path = pathfinder.FindPath(unitInfo.gridPosition, targetGridPos, currentGroundObject, movementRange);
+            if (path.Count > 0)
+            {
+                // Follow the pathfinding route
+                StartCoroutine(AnimateAlongPath(selectedUnit, path, currentGroundObject));
+            }
+            else
+            {
+                // Fallback to direct movement
+                StartCoroutine(AnimateHeightAwareMovement(selectedUnit, targetWorldPos, unitInfo.gridPosition, targetGridPos));
+            }
+        }
+        else
+        {
+            // Fallback to direct movement
+            StartCoroutine(AnimateHeightAwareMovement(selectedUnit, targetWorldPos, unitInfo.gridPosition, targetGridPos));
+        }
         
         // Update unit's grid info
         unitInfo.gridPosition = targetGridPos;
@@ -552,6 +675,196 @@ public class UnitMovementManager : MonoBehaviour
         
         // Ensure unit ends up exactly at target
         unit.transform.position = targetPosition;
+        isMoving = false;
+    }
+    
+    IEnumerator AnimateHeightAwareMovement(GameObject unit, Vector3 targetPosition, Vector2Int startGridPos, Vector2Int endGridPos)
+    {
+        isMoving = true;
+        Vector3 startPosition = unit.transform.position;
+        
+        // Calculate if this is a height transition
+        float heightDifference = targetPosition.y - startPosition.y;
+        bool isClimbing = heightDifference > 0.5f; // Climbing if more than 0.5 units up
+        bool isFalling = heightDifference < -0.5f; // Falling if more than 0.5 units down
+        
+        float journeyTime = Vector3.Distance(startPosition, targetPosition) / moveSpeed;
+        
+        // Adjust journey time for height transitions
+        if (isClimbing)
+        {
+            journeyTime *= 1.3f; // Slower when climbing
+        }
+        else if (isFalling)
+        {
+            journeyTime *= 0.8f; // Faster when falling
+        }
+        
+        float elapsedTime = 0;
+        
+        while (elapsedTime < journeyTime)
+        {
+            elapsedTime += Time.deltaTime;
+            float fractionOfJourney = elapsedTime / journeyTime;
+            
+            Vector3 currentPosition;
+            
+            if (isClimbing)
+            {
+                // Climbing animation: arc upward
+                float arcHeight = Mathf.Abs(heightDifference) * 0.3f + 0.5f; // Add extra height for arc
+                float horizontalProgress = Mathf.SmoothStep(0, 1, fractionOfJourney);
+                float verticalProgress = Mathf.Sin(fractionOfJourney * Mathf.PI); // Arc shape
+                
+                Vector3 horizontalPos = Vector3.Lerp(
+                    new Vector3(startPosition.x, startPosition.y, startPosition.z),
+                    new Vector3(targetPosition.x, startPosition.y, targetPosition.z),
+                    horizontalProgress
+                );
+                
+                float currentHeight = Mathf.Lerp(startPosition.y, targetPosition.y, horizontalProgress) + 
+                                    (verticalProgress * arcHeight);
+                
+                currentPosition = new Vector3(horizontalPos.x, currentHeight, horizontalPos.z);
+            }
+            else if (isFalling)
+            {
+                // Falling animation: slight arc downward
+                float horizontalProgress = Mathf.SmoothStep(0, 1, fractionOfJourney);
+                float fallProgress = fractionOfJourney * fractionOfJourney; // Accelerating fall
+                
+                Vector3 horizontalPos = Vector3.Lerp(
+                    new Vector3(startPosition.x, startPosition.y, startPosition.z),
+                    new Vector3(targetPosition.x, startPosition.y, targetPosition.z),
+                    horizontalProgress
+                );
+                
+                float currentHeight = Mathf.Lerp(startPosition.y, targetPosition.y, fallProgress);
+                currentPosition = new Vector3(horizontalPos.x, currentHeight, horizontalPos.z);
+            }
+            else
+            {
+                // Normal movement: smooth interpolation
+                float smoothProgress = Mathf.SmoothStep(0, 1, fractionOfJourney);
+                currentPosition = Vector3.Lerp(startPosition, targetPosition, smoothProgress);
+            }
+            
+            unit.transform.position = currentPosition;
+            yield return null;
+        }
+        
+        // Ensure unit ends up exactly at target
+        unit.transform.position = targetPosition;
+        isMoving = false;
+    }
+    
+    IEnumerator AnimateAlongPath(GameObject unit, List<Vector2Int> path, GameObject groundObject)
+    {
+        isMoving = true;
+        
+        // Convert path to world positions with proper heights
+        List<Vector3> worldPath = new List<Vector3>();
+        worldPath.Add(unit.transform.position); // Start from current position
+        
+        float heightOffset = CalculateUnitHeightOffset(unit);
+        
+        foreach (Vector2Int gridPos in path)
+        {
+            Vector3 worldPos;
+            if (terrainHeightDetector != null)
+            {
+                worldPos = terrainHeightDetector.GetGroundPositionAtGridPosition(gridPos, groundObject);
+            }
+            else
+            {
+                worldPos = gridManager.GridToWorldPosition(gridPos, groundObject);
+            }
+            worldPos.y += heightOffset;
+            worldPath.Add(worldPos);
+        }
+        
+        // Animate along each segment of the path
+        for (int i = 1; i < worldPath.Count; i++)
+        {
+            Vector3 startPos = worldPath[i - 1];
+            Vector3 endPos = worldPath[i];
+            
+            // Calculate movement time for this segment
+            float distance = Vector3.Distance(startPos, endPos);
+            float segmentTime = distance / moveSpeed;
+            
+            // Check if this is a height transition
+            float heightDifference = endPos.y - startPos.y;
+            bool isClimbing = heightDifference > 0.5f;
+            bool isFalling = heightDifference < -0.5f;
+            
+            // Adjust time for height transitions
+            if (isClimbing)
+            {
+                segmentTime *= 1.3f; // Slower when climbing
+            }
+            else if (isFalling)
+            {
+                segmentTime *= 0.8f; // Faster when falling
+            }
+            
+            // Animate this segment
+            float elapsedTime = 0;
+            while (elapsedTime < segmentTime)
+            {
+                elapsedTime += Time.deltaTime;
+                float progress = elapsedTime / segmentTime;
+                
+                Vector3 currentPosition;
+                
+                if (isClimbing)
+                {
+                    // Climbing animation with arc
+                    float arcHeight = Mathf.Abs(heightDifference) * 0.3f + 0.5f;
+                    float horizontalProgress = Mathf.SmoothStep(0, 1, progress);
+                    float verticalProgress = Mathf.Sin(progress * Mathf.PI);
+                    
+                    Vector3 horizontalPos = Vector3.Lerp(
+                        new Vector3(startPos.x, startPos.y, startPos.z),
+                        new Vector3(endPos.x, startPos.y, endPos.z),
+                        horizontalProgress
+                    );
+                    
+                    float currentHeight = Mathf.Lerp(startPos.y, endPos.y, horizontalProgress) + 
+                                        (verticalProgress * arcHeight);
+                    
+                    currentPosition = new Vector3(horizontalPos.x, currentHeight, horizontalPos.z);
+                }
+                else if (isFalling)
+                {
+                    // Falling animation with acceleration
+                    float horizontalProgress = Mathf.SmoothStep(0, 1, progress);
+                    float fallProgress = progress * progress; // Accelerating fall
+                    
+                    Vector3 horizontalPos = Vector3.Lerp(
+                        new Vector3(startPos.x, startPos.y, startPos.z),
+                        new Vector3(endPos.x, startPos.y, endPos.z),
+                        horizontalProgress
+                    );
+                    
+                    float currentHeight = Mathf.Lerp(startPos.y, endPos.y, fallProgress);
+                    currentPosition = new Vector3(horizontalPos.x, currentHeight, horizontalPos.z);
+                }
+                else
+                {
+                    // Normal movement
+                    float smoothProgress = Mathf.SmoothStep(0, 1, progress);
+                    currentPosition = Vector3.Lerp(startPos, endPos, smoothProgress);
+                }
+                
+                unit.transform.position = currentPosition;
+                yield return null;
+            }
+            
+            // Ensure we end exactly at the target position for this segment
+            unit.transform.position = endPos;
+        }
+        
         isMoving = false;
     }
     

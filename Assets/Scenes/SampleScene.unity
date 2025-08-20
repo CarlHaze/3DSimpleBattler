@@ -679,7 +679,6 @@ MonoBehaviour:
   rotationSpeed: 90
   tiltSpeed: 45
   minTilt: 0
-  maxTilt: 90
   rotateLeftKey: 113
   rotateRightKey: 101
   tiltUpKey: 114
@@ -1830,6 +1829,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1419738093}
   - component: {fileID: 1419738094}
+  - component: {fileID: 1419738095}
+  - component: {fileID: 1419738096}
   m_Layer: 0
   m_Name: HeightValidator
   m_TagString: Untagged
@@ -1874,6 +1875,51 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   enableDebugLogs: 1
+--- !u!114 &1419738095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1419738092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efdbfeed37384fd40ad6d86dac4b8eb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  raycastStartHeight: 20
+  maxRaycastDistance: 50
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 136
+  heightTolerance: 0.1
+  debugRaycasts: 0
+  showDebugSpheres: 0
+  maxStepHeight: 2
+  allowClimbing: 1
+  climbCheckRadius: 0.3
+--- !u!114 &1419738096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1419738092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d27b857e49c8a84888cd0c8c64adc86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  straightCost: 1
+  maxSearchNodes: 1000
+  debugPathfinding: 0
+  maxClimbHeight: 1.5
+  maxFallHeight: 3
+  heightPenalty: 0
+  preferDirectRoutes: 1
+  gapDetectionThreshold: 1
+  minimumGroundHeight: 0.2
+  enableGapDetection: 1
 --- !u!1 &1594314774
 GameObject:
   m_ObjectHideFlags: 0

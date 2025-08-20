@@ -25,6 +25,7 @@ public class UnitPlacementManager : MonoBehaviour
     private bool inPlacementMode = false;
     private SimpleUnitSelector unitSelector;
     private SimpleHeightCheck heightCheck;
+    private TerrainHeightDetector terrainHeightDetector;
     private GameObject highlightObject;
     private Vector2Int currentGridPos = Vector2Int.one * -1;
     private GameObject currentGroundObject;
@@ -39,6 +40,7 @@ public class UnitPlacementManager : MonoBehaviour
         gameCamera = Camera.main;
         unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
         heightCheck = FindFirstObjectByType<SimpleHeightCheck>();
+        terrainHeightDetector = FindFirstObjectByType<TerrainHeightDetector>();
         
         if (gameCamera == null)
             gameCamera = FindFirstObjectByType<Camera>();
@@ -56,6 +58,11 @@ public class UnitPlacementManager : MonoBehaviour
         if (heightCheck == null)
         {
             Debug.LogError("SimpleHeightCheck not found!");
+        }
+        
+        if (terrainHeightDetector == null)
+        {
+            Debug.LogWarning("TerrainHeightDetector not found - units may not follow terrain height properly!");
         }
         
         if (gridHighlightPrefab == null)
@@ -333,9 +340,23 @@ public class UnitPlacementManager : MonoBehaviour
     
     void CreateUnit(Vector2Int gridPos, GameObject groundObj)
     {
-        Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
+        Vector3 worldPos;
+        
+        // Always use grid manager for basic position, then adjust height if needed
+        worldPos = gridManager.GridToWorldPosition(gridPos, groundObj);
+        
+        // Optionally use terrain height detector to get more accurate height
+        if (terrainHeightDetector != null)
+        {
+            float accurateHeight = terrainHeightDetector.GetGroundHeightAtGridPosition(gridPos, groundObj);
+            worldPos.y = accurateHeight;
+        }
+        
         float heightOffset = CalculateUnitHeightOffset();
         worldPos.y += heightOffset;
+        
+        // Debug logging to help identify placement issues
+        Debug.Log($"Placing unit at grid {gridPos} -> world {worldPos} on {groundObj.name}");
         
         GameObject newUnit = Instantiate(playerPrefab, worldPos, Quaternion.identity);
         SetTileOccupied(groundObj, gridPos, true, newUnit);
