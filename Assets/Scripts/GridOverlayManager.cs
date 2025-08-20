@@ -29,8 +29,9 @@ public class GridOverlayManager : MonoBehaviour
     {
         groundLayer = LayerMask.NameToLayer(groundLayerName);
         
-        // IMPORTANT: Set up the layer mask to include the ground layer
-        groundLayerMask = 1 << groundLayer;
+        // IMPORTANT: Set up the layer mask
+        if (groundLayerMask == -1)
+            groundLayerMask = 1 << groundLayer;
         
         
         if (generateOnStart)

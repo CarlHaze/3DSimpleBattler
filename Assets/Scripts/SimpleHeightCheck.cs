@@ -6,7 +6,8 @@ public class SimpleHeightCheck : MonoBehaviour
     public float maxHeightToCheck = 2f; // Only check positions above this height
     public float maxClimbHeight = 1.5f; // Maximum height difference we can climb
     public float maxAbsoluteHeight = 5f; // Maximum absolute height allowed for placement
-    public LayerMask groundLayerMask = 1;
+    public LayerMask groundLayerMask = 1; // Ground layer for walking surfaces
+    public LayerMask gridLayerMask = 1; // Grid layer for grid objects
     
     [Header("Debug")]
     public bool enableDebugLogs = true;
@@ -115,7 +116,8 @@ public class SimpleHeightCheck : MonoBehaviour
         
         foreach (GameObject obj in allObjects)
         {
-            if (((1 << obj.layer) & groundLayerMask) != 0 && obj.GetComponent<Renderer>() != null)
+            // Check both ground and grid layers for height validation
+            if ((((1 << obj.layer) & groundLayerMask) != 0 || ((1 << obj.layer) & gridLayerMask) != 0) && obj.GetComponent<Renderer>() != null)
             {
                 foreach (Vector2Int adjPos in adjacentPositions)
                 {

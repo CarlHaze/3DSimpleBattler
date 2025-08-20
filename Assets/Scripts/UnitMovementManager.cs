@@ -431,8 +431,8 @@ public class UnitMovementManager : MonoBehaviour
         highlight.transform.position = worldPos;
         highlight.transform.localScale = new Vector3(0.8f, 0.02f, 0.8f);
         
-        // Keep collider so we can click on highlights for movement
-        // Destroy(highlight.GetComponent<Collider>());
+        // Remove collider to prevent physics interactions with units
+        Destroy(highlight.GetComponent<Collider>());
         
         // Set material and color
         Renderer renderer = highlight.GetComponent<Renderer>();
@@ -457,7 +457,7 @@ public class UnitMovementManager : MonoBehaviour
         if (selectedUnit == null || currentGroundObject == null)
             return false;
         
-        // Check if we clicked on a valid movement highlight
+        // Check if we clicked on a valid movement highlight (old method)
         if (clickedObject != null && clickedObject.name.StartsWith("MovementHighlight_") && clickedObject.name.Contains("Valid"))
         {
             // Convert world position to grid position
@@ -466,6 +466,20 @@ public class UnitMovementManager : MonoBehaviour
             // Perform the move
             MoveUnit(targetGridPos);
             return true;
+        }
+        
+        // New method: check if we clicked on ground and if that position is a valid move
+        if (clickedObject != null && (clickedObject.layer == LayerMask.NameToLayer("Ground") || clickedObject.layer == LayerMask.NameToLayer("Grid")))
+        {
+            Vector2Int targetGridPos = gridManager.WorldToGridPosition(worldClickPos, clickedObject);
+            
+            // Check if this position is in our valid move list
+            if (validMovePositions.Contains(targetGridPos))
+            {
+                currentGroundObject = clickedObject;
+                MoveUnit(targetGridPos);
+                return true;
+            }
         }
         
         return false;

@@ -6,7 +6,8 @@ public class UnitPlacementManager : MonoBehaviour
     [Header("Placement Settings")]
     public GameObject playerPrefab;
     public KeyCode activationKey = KeyCode.P;
-    public LayerMask groundLayerMask = 1;
+    public LayerMask groundLayerMask = 1; // Ground layer for walking/collision detection
+    public LayerMask gridLayerMask = 1; // Grid layer for grid objects
     public LayerMask obstructionLayerMask = -1;
     public float unitHeightOffset = 0f;
     public bool exitModeAfterPlacement = true;
@@ -71,7 +72,8 @@ public class UnitPlacementManager : MonoBehaviour
         
         foreach (GameObject obj in allObjects)
         {
-            if (((1 << obj.layer) & groundLayerMask) != 0 && obj.GetComponent<Renderer>() != null)
+            // Check both ground and grid layers for tile initialization
+            if ((((1 << obj.layer) & groundLayerMask) != 0 || ((1 << obj.layer) & gridLayerMask) != 0) && obj.GetComponent<Renderer>() != null)
             {
                 InitializeGroundTiles(obj);
             }
@@ -378,7 +380,7 @@ public class UnitPlacementManager : MonoBehaviour
     
     bool IsValidGroundObject(GameObject obj)
     {
-        return ((1 << obj.layer) & groundLayerMask) != 0;
+        return ((1 << obj.layer) & groundLayerMask) != 0 || ((1 << obj.layer) & gridLayerMask) != 0;
     }
     
     void CreateDefaultHighlight()
