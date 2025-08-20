@@ -261,7 +261,9 @@ public class GridMovementHighlighter : MonoBehaviour
             GameObject hitObject = hit.collider.gameObject;
             
             // If it's on the Ground layer, it's walkable
-            if (hitObject.layer == LayerMask.NameToLayer("Ground"))
+            // Also check for Grid layer objects which are walkable surfaces
+            if (hitObject.layer == LayerMask.NameToLayer("Ground") || 
+                hitObject.layer == LayerMask.NameToLayer("Grid"))
                 return true;
             
             // Check for specific tags that indicate unwalkable areas

@@ -13,7 +13,8 @@ public class EnemySpawner : MonoBehaviour
     [Header("Enemy Settings")]
     public GameObject enemyPrefab;
     public int enemiesToSpawn = 3;
-    public LayerMask groundLayerMask = 1;
+    public LayerMask groundLayerMask = 1; // Ground layer for walking surfaces
+    public LayerMask gridLayerMask = 1; // Grid layer for grid objects  
     public LayerMask obstructionLayerMask = -1;
     public float enemyHeightOffset = 0f;
     
@@ -237,7 +238,8 @@ public class EnemySpawner : MonoBehaviour
         
         foreach (GameObject obj in allObjects)
         {
-            if (((1 << obj.layer) & groundLayerMask) != 0 && obj.GetComponent<Renderer>() != null)
+            // Check both ground and grid layers for spawn surfaces
+            if ((((1 << obj.layer) & groundLayerMask) != 0 || ((1 << obj.layer) & gridLayerMask) != 0) && obj.GetComponent<Renderer>() != null)
             {
                 groundObjects.Add(obj);
             }
