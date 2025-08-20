@@ -19,6 +19,7 @@ public class UnitMovementManager : MonoBehaviour
     private UnitPlacementManager placementManager;
     private SimpleHeightCheck heightChecker;
     private SimpleUnitSelector unitSelector;
+    private SimpleUnitOutline outlineController;
     
     // Current selection state
     private GameObject selectedUnit;
@@ -39,6 +40,7 @@ public class UnitMovementManager : MonoBehaviour
         placementManager = FindFirstObjectByType<UnitPlacementManager>();
         heightChecker = FindFirstObjectByType<SimpleHeightCheck>();
         unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
+        outlineController = FindFirstObjectByType<SimpleUnitOutline>();
 
         if (gridManager == null)
             Debug.LogError("GridOverlayManager not found!");
@@ -46,6 +48,8 @@ public class UnitMovementManager : MonoBehaviour
             Debug.LogError("UnitPlacementManager not found!");
         if (heightChecker == null)
             Debug.LogError("SimpleHeightCheck not found!");
+        if (outlineController == null)
+            Debug.LogWarning("SimpleUnitOutline not found - unit outlines will not work!");
         
     }
     
@@ -123,6 +127,12 @@ public class UnitMovementManager : MonoBehaviour
         
         selectedUnit = unit;
         
+        // Add outline to selected unit
+        if (outlineController != null)
+        {
+            outlineController.SetSelectedUnit(selectedUnit);
+        }
+        
         // Get unit's grid info
         UnitGridInfo unitInfo = unit.GetComponent<UnitGridInfo>();
         if (unitInfo != null)
@@ -137,6 +147,12 @@ public class UnitMovementManager : MonoBehaviour
     void DeselectUnit()
     {
         if (selectedUnit == null) return;
+        
+        // Remove outline from deselected unit
+        if (outlineController != null)
+        {
+            outlineController.ClearSelectedUnit();
+        }
         
         SimpleMessageLog.Log("Unit deselected");
         selectedUnit = null;

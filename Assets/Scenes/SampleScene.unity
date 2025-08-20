@@ -1962,6 +1962,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1667105152}
   - component: {fileID: 1667105151}
+  - component: {fileID: 1667105153}
   m_Layer: 0
   m_Name: UnitSelector
   m_TagString: Untagged
@@ -2004,6 +2005,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1667105153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1667105150}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e12a0006266f0e6419aa6949d57b4e2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 0, g: 1, b: 0, a: 1}
+  outlineWidth: 0.02
+  animateOutline: 1
+  pulseSpeed: 2
+  minScale: 0.98
+  maxScale: 1.05
+  enableDebugLogs: 0
 --- !u!1 &1745696329
 GameObject:
   m_ObjectHideFlags: 0
