@@ -1,0 +1,29 @@
+:root {
+}
+
+.container {
+    background-image: url("project://database/Assets/UI/Materials/el_03_02.png?fileID=2800000&guid=88cb925a4b5c9b74e8c12a1ad3828c53&type=3#el_03_02");
+    background-color: rgba(0, 0, 0, 0);
+    width: 500px;
+    height: 500px;
+    max-width: 500px;
+    max-height: 500px;
+}
+
+.button {
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Texturina-VariableFont_opsz,wght.ttf?fileID=12800000&guid=5a0a396b52ce8a2458a3ab1cf1a9f9d9&type=3#Texturina-VariableFont_opsz,wght");
+    border-left-color: rgb(255, 255, 255);
+    border-top-color: rgb(255, 255, 255);
+    border-right-color: rgb(255, 255, 255);
+    border-bottom-color: rgb(255, 255, 255);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    color: rgb(27, 27, 27);
+    -unity-text-align: middle-center;
+}
+
+.hide {
+    display: none;
+}

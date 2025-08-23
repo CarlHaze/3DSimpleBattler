@@ -1,0 +1,28 @@
+:root {
+}
+
+.container {
+}
+
+.button {
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Texturina-VariableFont_opsz,wght.ttf?fileID=12800000&guid=5a0a396b52ce8a2458a3ab1cf1a9f9d9&type=3#Texturina-VariableFont_opsz,wght");
+    box-shadow: inset 0 1px 3px 0 rgb(145, 184, 179);
+    background: linear-gradient(to bottom, rgb(118, 141, 135) 5%, rgb(108, 124, 124) 100%);
+    background-color: rgb(118, 141, 135);
+    border-radius: 5px;
+    border: 1px solid rgb(86, 105, 99);
+    display: inline-block;
+    cursor: pointer;
+    color: rgb(255, 255, 255);
+    font-family: Arial;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 11px 23px;
+    text-decoration: none;
+    text-shadow: 0 -1px 0 rgb(43, 102, 94);
+}
+
+.btn_hover :hover {
+    background: linear-gradient(to bottom, rgb(108, 124, 124) 5%, rgb(118, 141, 135) 100%);
+    background-color: rgb(108, 124, 124);
+}
