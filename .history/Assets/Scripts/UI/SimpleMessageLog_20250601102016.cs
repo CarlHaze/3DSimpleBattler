@@ -7,7 +7,7 @@ public class SimpleMessageLog : MonoBehaviour
 {
     [Header("UI Reference")]
     public TextMeshProUGUI logText;
-    public ScrollRect scrollRect;
+    public ScrollRect scrollRect; // Add this reference
     
     [Header("Settings")]
     public int maxLines = 10;
