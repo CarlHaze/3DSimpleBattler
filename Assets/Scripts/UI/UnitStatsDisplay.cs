@@ -81,8 +81,14 @@ public class UnitStatsDisplay : MonoBehaviour
        
         CharacterStats stats = character.Stats;
         string displayName = !string.IsNullOrEmpty(character.CharacterName) ? character.CharacterName : selectedUnit.name;
+        
+        string classInfo = "";
+        if (character.CharacterClass != null)
+        {
+            classInfo = $"\nClass: {character.CharacterClass.ClassName}";
+        }
        
-        string newText = $"{displayName}\nHP: {stats.CurrentHP}/{stats.MaxHP}\nATK: {stats.Attack} | DEF: {stats.Defense}";
+        string newText = $"{displayName}{classInfo}\nHP: {stats.CurrentHP}/{stats.MaxHP}\nATK: {stats.Attack} | DEF: {stats.Defense}";
         selectedUnitStatsText.text = newText;
         
         Debug.Log($"Set text to: {newText}");
@@ -147,7 +153,13 @@ public class UnitStatsDisplay : MonoBehaviour
         CharacterStats stats = character.Stats;
         string displayName = !string.IsNullOrEmpty(character.CharacterName) ? character.CharacterName : enemyUnit.name;
         
-        string newText = $"Enemy: {displayName}\nHP: {stats.CurrentHP}/{stats.MaxHP}\nATK: {stats.Attack} | DEF: {stats.Defense}";
+        string classInfo = "";
+        if (character.CharacterClass != null)
+        {
+            classInfo = $"\nClass: {character.CharacterClass.ClassName}";
+        }
+        
+        string newText = $"Enemy: {displayName}{classInfo}\nHP: {stats.CurrentHP}/{stats.MaxHP}\nATK: {stats.Attack} | DEF: {stats.Defense}";
         selectedUnitStatsText.text = newText;
         
         Debug.Log($"Set enemy text to: {newText}");
