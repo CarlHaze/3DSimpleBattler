@@ -183,10 +183,18 @@ public class UnitPlacementManager : MonoBehaviour
     
     void Update()
     {
-        if (modeManager != null && modeManager.IsInPlacementMode())
+        if (modeManager != null)
         {
-            HandlePlacementInput();
-            HandlePlacementPreview();
+            if (modeManager.IsInPlacementMode())
+            {
+                HandlePlacementInput();
+                HandlePlacementPreview();
+            }
+            else
+            {
+                // Make sure highlight is hidden when not in placement mode
+                HideHighlight();
+            }
         }
     }
     

@@ -17,6 +17,9 @@ public class StatsMenuController : MonoBehaviour
     // Enemy selection tracking
     private GameObject lastSelectedEnemyUnit;
     
+    // Panel state tracking to prevent spam
+    private bool isPanelVisible = false;
+    
     void Start()
     {
         // Get the UIDocument component
@@ -48,6 +51,7 @@ public class StatsMenuController : MonoBehaviour
         if (panel != null)
         {
             panel.AddToClassList("hide");
+            isPanelVisible = false;
             Debug.Log("Panel hidden on start");
         }
         
@@ -113,18 +117,20 @@ public class StatsMenuController : MonoBehaviour
     
     void ShowPanel()
     {
-        if (panel != null)
+        if (panel != null && !isPanelVisible)
         {
             panel.RemoveFromClassList("hide");
+            isPanelVisible = true;
             Debug.Log("Panel shown");
         }
     }
     
     void HidePanel()
     {
-        if (panel != null)
+        if (panel != null && isPanelVisible)
         {
             panel.AddToClassList("hide");
+            isPanelVisible = false;
             Debug.Log("Panel hidden");
         }
     }
