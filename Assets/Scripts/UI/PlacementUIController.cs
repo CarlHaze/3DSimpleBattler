@@ -5,11 +5,11 @@ public class PlacementUIController : MonoBehaviour
 {
     private UIDocument uiDocument;
     private SimpleUnitSelector unitSelector;
+    private ModeManager modeManager;
     
     // References to the labels
     private Label unitCountLabel;
     private Label selectedUnitLabel;
-
     private Label modeLabel;
     
     void Start()
@@ -32,12 +32,19 @@ public class PlacementUIController : MonoBehaviour
         modeLabel = root.Q<Label>("ModeLabel");
 
         
-        // Find the unit selector
+        // Find the unit selector and mode manager
         unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
+        modeManager = FindFirstObjectByType<ModeManager>();
         
         if (unitSelector == null)
         {
             Debug.LogError("SimpleUnitSelector not found!");
+            return;
+        }
+        
+        if (modeManager == null)
+        {
+            Debug.LogError("ModeManager not found!");
             return;
         }
         
@@ -52,23 +59,45 @@ public class PlacementUIController : MonoBehaviour
     
     void UpdateUI()
     {
-        if (unitSelector == null) return;
+        if (unitSelector == null || modeManager == null) return;
 
+        // Update mode label
         if (modeLabel != null)
         {
-            modeLabel.text = $"Mode:";
+            modeLabel.text = $"Mode: {modeManager.GetModeDisplayName()}";
         }
         
-        // Update selected unit text
-            if (selectedUnitLabel != null)
+        // Update selected unit text (only show in placement mode)
+        if (selectedUnitLabel != null)
+        {
+            if (modeManager.IsInPlacementMode())
             {
                 selectedUnitLabel.text = $"Selected: {unitSelector.GetCurrentUnitName()}";
+                selectedUnitLabel.style.display = DisplayStyle.Flex;
             }
+            else
+            {
+                selectedUnitLabel.style.display = DisplayStyle.None;
+            }
+        }
         
-        // Update count text
+        // Update count text (only show in placement mode)
         if (unitCountLabel != null)
         {
-            unitCountLabel.text = $"Units: {unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()}";
+            if (modeManager.IsInPlacementMode())
+            {
+                unitCountLabel.text = $"Units: {unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()}";
+                unitCountLabel.style.display = DisplayStyle.Flex;
+            }
+            else
+            {
+                unitCountLabel.style.display = DisplayStyle.None;
+            }
         }
+    }
+    
+    public void OnModeChanged(GameMode newMode)
+    {
+        UpdateUI();
     }
 }
