@@ -200,19 +200,19 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 432886958}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: fc349513eb7885341975ddaff22cb9c7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -13.06
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fc349513eb7885341975ddaff22cb9c7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 2.317241
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fc349513eb7885341975ddaff22cb9c7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -2.8518732
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fc349513eb7885341975ddaff22cb9c7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -220,7 +220,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fc349513eb7885341975ddaff22cb9c7, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fc349513eb7885341975ddaff22cb9c7, type: 3}
       propertyPath: m_LocalRotation.y
@@ -913,7 +913,8 @@ Transform:
   m_LocalPosition: {x: 13.06, y: -2.317241, z: 2.8518732}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 778613543}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &486487446
@@ -1312,6 +1313,11 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5495902117074765545, guid: fc349513eb7885341975ddaff22cb9c7, type: 3}
+--- !u!4 &778613543 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: fc349513eb7885341975ddaff22cb9c7, type: 3}
+  m_PrefabInstance: {fileID: 12776281}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -2467,4 +2473,3 @@ SceneRoots:
   - {fileID: 1353947761}
   - {fileID: 432886958}
   - {fileID: 76961345}
-  - {fileID: 12776281}
