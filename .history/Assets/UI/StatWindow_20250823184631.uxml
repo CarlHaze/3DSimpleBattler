@@ -1,0 +1,58 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="stat-window" class="stat-window">
+        <ui:VisualElement name="header" class="stat-header">
+            <ui:Label text="Unit Stats" display-tooltip-when-elided="true" name="window-title" class="window-title" />
+            <ui:Button text="×" display-tooltip-when-elided="true" name="close-button" class="close-button" />
+        </ui:VisualElement>
+        
+        <ui:VisualElement name="content" class="stat-content">
+            <!-- Unit Basic Info -->
+            <ui:VisualElement name="unit-info" class="info-section">
+                <ui:Label text="Unit Name" display-tooltip-when-elided="true" name="unit-name" class="unit-name" />
+                <ui:Label text="Fighter" display-tooltip-when-elided="true" name="unit-class" class="unit-class" />
+            </ui:VisualElement>
+            
+            <!-- Health Section -->
+            <ui:VisualElement name="health-section" class="stat-section">
+                <ui:Label text="Health" display-tooltip-when-elided="true" class="stat-label" />
+                <ui:VisualElement name="health-bar-container" class="bar-container">
+                    <ui:ProgressBar value="100" high-value="100" name="health-bar" class="health-bar" />
+                    <ui:Label text="100/100" display-tooltip-when-elided="true" name="health-text" class="bar-text" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            
+            <!-- Stats Grid -->
+            <ui:VisualElement name="stats-grid" class="stats-grid">
+                <!-- Attack Stat -->
+                <ui:VisualElement name="attack-stat" class="stat-row">
+                    <ui:Label text="Attack" display-tooltip-when-elided="true" class="stat-name" />
+                    <ui:Label text="10" display-tooltip-when-elided="true" name="attack-value" class="stat-value" />
+                </ui:VisualElement>
+                
+                <!-- Defense Stat -->
+                <ui:VisualElement name="defense-stat" class="stat-row">
+                    <ui:Label text="Defense" display-tooltip-when-elided="true" class="stat-name" />
+                    <ui:Label text="5" display-tooltip-when-elided="true" name="defense-value" class="stat-value" />
+                </ui:VisualElement>
+                
+                <!-- Speed Stat -->
+                <ui:VisualElement name="speed-stat" class="stat-row">
+                    <ui:Label text="Speed" display-tooltip-when-elided="true" class="stat-name" />
+                    <ui:Label text="5" display-tooltip-when-elided="true" name="speed-value" class="stat-value" />
+                </ui:VisualElement>
+                
+                <!-- Magic Stat -->
+                <ui:VisualElement name="magic-stat" class="stat-row">
+                    <ui:Label text="Magic" display-tooltip-when-elided="true" class="stat-name" />
+                    <ui:Label text="0" display-tooltip-when-elided="true" name="magic-value" class="stat-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            
+            <!-- Action Buttons -->
+            <ui:VisualElement name="action-buttons" class="button-row">
+                <ui:Button text="Move" display-tooltip-when-elided="true" name="move-button" class="action-button" />
+                <ui:Button text="Attack" display-tooltip-when-elided="true" name="attack-button" class="action-button" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

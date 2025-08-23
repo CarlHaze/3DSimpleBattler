@@ -1,0 +1,26 @@
+:root {
+}
+
+.panel {
+    background-color: rgba(49, 0, 77, 0.46);
+    background-size: 300px 200px;
+    -unity-background-scale-mode: scale-and-crop;
+    -unity-slice-scale: 1px;
+}
+
+.hide {
+    background-color: rgba(49, 0, 77, 0.46);
+    background-size: 300px 200px;
+    -unity-background-scale-mode: scale-and-crop;
+    -unity-slice-scale: 1px;
+    display: none;
+}
+
+.menu {
+    align-items: center;
+}
+
+.stats_label {
+    color: rgb(255, 255, 255);
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Texturina-VariableFont_opsz,wght.ttf?fileID=12800000&guid=5a0a396b52ce8a2458a3ab1cf1a9f9d9&type=3#Texturina-VariableFont_opsz,wght");
+}
