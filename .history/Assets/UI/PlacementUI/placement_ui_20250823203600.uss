@@ -1,0 +1,13 @@
+:root {
+}
+
+.label {
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Texturina-VariableFont_opsz,wght.ttf?fileID=12800000&guid=5a0a396b52ce8a2458a3ab1cf1a9f9d9&type=3#Texturina-VariableFont_opsz,wght");
+    color: rgb(255, 255, 255);
+}
+
+.container {
+     width: 400px;     /* fixed width */
+     height: 250px;    /* fixed height */
+     flex-shrink: 0;  
+}

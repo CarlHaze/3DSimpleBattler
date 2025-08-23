@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/stats_menu.uss?fileID=7433441132597879392&amp;guid=ccbe9f6ba4614634e850e796edddd336&amp;type=3#stats_menu" />
     <ui:VisualElement name="Panel" class="panel" style="flex-grow: 1; background-color: rgba(49, 0, 77, 0);">
-        <ui:VisualElement name="Container" class="menu" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); width: 400px; height: 10px; min-height: 50px; max-height: 200px; position: relative; top: 94px; left: 5px; right: auto; bottom: auto; transform-origin: center; translate: 207px 319px; background-image: url(&quot;project://database/Assets/UI/Materials/el_03_02.png?fileID=2800000&amp;guid=88cb925a4b5c9b74e8c12a1ad3828c53&amp;type=3#el_03_02&quot;); justify-content: center; -unity-background-scale-mode: scale-to-fit;">
+        <ui:VisualElement name="Container" class="menu" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); width: 400px; height: 10px; min-height: 50px; max-height: 200px; position: relative; top: 94px; left: 5px; right: auto; bottom: auto; transform-origin: center; translate: -100px 360px; background-image: url(&quot;project://database/Assets/UI/Materials/el_03_02.png?fileID=2800000&amp;guid=88cb925a4b5c9b74e8c12a1ad3828c53&amp;type=3#el_03_02&quot;); justify-content: center; -unity-background-scale-mode: scale-to-fit;">
             <ui:Label text="Label" name="NameLabel" class="stats_label" />
             <ui:Label text="Label" name="HPLabel" class="stats_label" />
             <ui:Label text="Label" name="ATTLabel" class="stats_label" />
