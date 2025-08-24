@@ -7,6 +7,10 @@ public class HealthBarController : MonoBehaviour
     private ProgressBar healthProgressBar;
     private Character character;
     
+    // Cache previous values to avoid unnecessary updates
+    private int lastCurrentHP = -1;
+    private int lastMaxHP = -1;
+    
     void Start()
     {
         uiDocument = GetComponent<UIDocument>();
@@ -48,6 +52,13 @@ public class HealthBarController : MonoBehaviour
         int currentHP = stats.CurrentHP;
         int maxHP = stats.MaxHP;
         
+        // Only update if values have changed
+        if (currentHP == lastCurrentHP && maxHP == lastMaxHP)
+            return;
+            
+        lastCurrentHP = currentHP;
+        lastMaxHP = maxHP;
+        
         // Update the progress bar value (0-100 scale)
         float healthPercentage = maxHP > 0 ? (float)currentHP / maxHP * 100f : 0f;
         healthProgressBar.value = healthPercentage;
@@ -58,8 +69,7 @@ public class HealthBarController : MonoBehaviour
     
     void Update()
     {
-        // Update health bar every frame to catch any changes
-        // This is simple but could be optimized with events if needed
+        // Update health bar only when necessary (cached values prevent unnecessary UI updates)
         UpdateHealthBar();
     }
 }
