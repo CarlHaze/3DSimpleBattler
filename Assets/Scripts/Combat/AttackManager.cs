@@ -243,11 +243,23 @@ public class AttackManager : MonoBehaviour
             return;
         }
         
-        // Get attack power and let TakeDamage handle the defense calculation
+        // Get base attack power
         int attackPower = attackerCharacter.Stats.Attack;
         
+        // Allow attacker's class logic to modify outgoing damage
+        if (attackerCharacter.CharacterClass?.ClassLogic != null)
+        {
+            attackerCharacter.CharacterClass.ClassLogic.OnAttackCalculated(attackerCharacter, targetCharacter, ref attackPower);
+        }
+        
         // Apply damage and get the actual damage dealt
-        int actualDamage = targetCharacter.Stats.TakeDamage(attackPower);
+        int actualDamage = targetCharacter.Stats.TakeDamage(attackPower, attackerCharacter);
+        
+        // Notify attacker's class logic of damage dealt
+        if (attackerCharacter.CharacterClass?.ClassLogic != null)
+        {
+            attackerCharacter.CharacterClass.ClassLogic.OnDealDamage(attackerCharacter, targetCharacter, actualDamage);
+        }
         
         // Log the attack with actual damage dealt
         string attackerName = attackerCharacter.CharacterName;
@@ -264,6 +276,13 @@ public class AttackManager : MonoBehaviour
         if (!targetCharacter.Stats.IsAlive)
         {
             SimpleMessageLog.Log($"{targetName} is defeated!");
+            
+            // Notify class logic of unit defeat
+            if (targetCharacter.CharacterClass?.ClassLogic != null)
+            {
+                targetCharacter.CharacterClass.ClassLogic.OnUnitDefeated(targetCharacter, attackerCharacter);
+            }
+            
             HandleUnitDefeated(target);
         }
         
