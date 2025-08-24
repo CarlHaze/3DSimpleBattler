@@ -76,7 +76,7 @@ public class UnitMovementManager : MonoBehaviour
     bool AllUnitsPlaced()
     {
         if (unitSelector == null) return true;
-        return unitSelector.GetUnitsPlaced() >= unitSelector.GetMaxUnits();
+        return unitSelector.IsInitialPlacementComplete();
     }
     
     void HandleMovementInput()

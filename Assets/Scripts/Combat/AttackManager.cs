@@ -5,8 +5,8 @@ public class AttackManager : MonoBehaviour
 {
     [Header("Attack Settings")]
     public Color attackRangeColor = Color.red;
-    public Color validTargetColor = Color.orange;
-    public Material attackHighlightMaterial;
+    public Color targetableRangeColor = Color.yellow;
+    public Material attackRangeOverlayMaterial;
     
     private Camera gameCamera;
     private GridOverlayManager gridManager;
@@ -15,7 +15,7 @@ public class AttackManager : MonoBehaviour
     
     // Current attack state
     private GameObject attackingUnit;
-    private List<GameObject> attackRangeHighlights = new List<GameObject>();
+    private List<GameObject> attackRangeOverlays = new List<GameObject>();
     private List<GameObject> validTargets = new List<GameObject>();
     private bool inAttackMode = false;
     private GameObject currentGroundObject;
@@ -90,7 +90,7 @@ public class AttackManager : MonoBehaviour
     public void ExitAttackMode()
     {
         inAttackMode = false;
-        ClearAttackHighlights();
+        ClearAttackRangeOverlays();
         validTargets.Clear();
         attackingUnit = null;
         currentGroundObject = null;
@@ -107,7 +107,7 @@ public class AttackManager : MonoBehaviour
         
         int attackRange = character.Stats.AttackRange;
         
-        // Show attack range highlights
+        // Show attack range overlays
         for (int x = -attackRange; x <= attackRange; x++)
         {
             for (int z = -attackRange; z <= attackRange; z++)
@@ -124,57 +124,67 @@ public class AttackManager : MonoBehaviour
                 // Check if position is valid
                 if (gridManager.IsValidGridPosition(checkPos, groundObject))
                 {
-                    CreateAttackRangeHighlight(checkPos, groundObject);
-                    
                     // Check if there's a target at this position
                     GameObject target = GetTargetAtPosition(checkPos, groundObject);
-                    if (target != null && IsValidTarget(target))
+                    bool hasTarget = target != null && IsValidTarget(target);
+                    
+                    if (hasTarget)
                     {
                         validTargets.Add(target);
-                        HighlightValidTarget(target);
+                        CreateAttackRangeOverlay(checkPos, groundObject, targetableRangeColor);
+                    }
+                    else
+                    {
+                        CreateAttackRangeOverlay(checkPos, groundObject, attackRangeColor);
                     }
                 }
             }
         }
     }
     
-    void CreateAttackRangeHighlight(Vector2Int gridPos, GameObject groundObject)
+    void CreateAttackRangeOverlay(Vector2Int gridPos, GameObject groundObject, Color overlayColor)
     {
         Vector3 worldPos = gridManager.GridToWorldPosition(gridPos, groundObject);
         
-        GameObject highlight = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        highlight.name = $"AttackRangeHighlight_{gridPos.x}_{gridPos.y}";
-        highlight.transform.position = worldPos;
-        highlight.transform.localScale = new Vector3(0.8f, 0.02f, 0.8f);
+        // Create a flat quad overlay for the grid tile
+        GameObject overlay = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        overlay.name = $"AttackRangeOverlay_{gridPos.x}_{gridPos.y}";
+        overlay.transform.position = worldPos + Vector3.up * 0.01f; // Slightly above ground
+        overlay.transform.rotation = Quaternion.Euler(90, 0, 0); // Flat on ground
+        overlay.transform.localScale = new Vector3(gridManager.gridSize * 0.9f, gridManager.gridSize * 0.9f, 1f);
         
         // Remove collider to prevent physics interactions
-        Destroy(highlight.GetComponent<Collider>());
+        Destroy(overlay.GetComponent<Collider>());
         
-        // Set material and color
-        Renderer renderer = highlight.GetComponent<Renderer>();
-        if (attackHighlightMaterial != null)
+        // Set material and color with transparency
+        Renderer renderer = overlay.GetComponent<Renderer>();
+        Material overlayMaterial;
+        
+        if (attackRangeOverlayMaterial != null)
         {
-            Material mat = new Material(attackHighlightMaterial);
-            mat.color = attackRangeColor;
-            renderer.material = mat;
+            overlayMaterial = new Material(attackRangeOverlayMaterial);
         }
         else
         {
-            Material mat = new Material(Shader.Find("Standard"));
-            mat.color = attackRangeColor;
-            renderer.material = mat;
+            overlayMaterial = new Material(Shader.Find("Standard"));
+            // Set up transparency
+            overlayMaterial.SetFloat("_Mode", 3); // Transparent mode
+            overlayMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            overlayMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            overlayMaterial.SetInt("_ZWrite", 0);
+            overlayMaterial.DisableKeyword("_ALPHATEST_ON");
+            overlayMaterial.EnableKeyword("_ALPHABLEND_ON");
+            overlayMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            overlayMaterial.renderQueue = 3000;
         }
         
-        attackRangeHighlights.Add(highlight);
-    }
-    
-    void HighlightValidTarget(GameObject target)
-    {
-        // Add orange outline to valid targets
-        if (outlineController != null)
-        {
-            outlineController.AddTargetOutline(target, validTargetColor);
-        }
+        // Set semi-transparent color
+        Color transparentColor = overlayColor;
+        transparentColor.a = 0.4f; // Semi-transparent
+        overlayMaterial.color = transparentColor;
+        renderer.material = overlayMaterial;
+        
+        attackRangeOverlays.Add(overlay);
     }
     
     GameObject GetTargetAtPosition(Vector2Int gridPos, GameObject groundObject)
@@ -233,18 +243,16 @@ public class AttackManager : MonoBehaviour
             return;
         }
         
-        // Calculate damage: attacker's attack vs target's defense
+        // Get attack power and let TakeDamage handle the defense calculation
         int attackPower = attackerCharacter.Stats.Attack;
-        int targetDefense = targetCharacter.Stats.Defense;
-        int damage = Mathf.Max(attackPower - targetDefense, 1); // Minimum 1 damage
         
-        // Apply damage
-        targetCharacter.Stats.TakeDamage(damage);
+        // Apply damage and get the actual damage dealt
+        int actualDamage = targetCharacter.Stats.TakeDamage(attackPower);
         
-        // Log the attack
+        // Log the attack with actual damage dealt
         string attackerName = attackerCharacter.CharacterName;
         string targetName = targetCharacter.CharacterName;
-        SimpleMessageLog.Log($"{attackerName} attacks {targetName} for {damage} damage!");
+        SimpleMessageLog.Log($"{attackerName} attacks {targetName} for {actualDamage} damage!");
         
         if (!targetCharacter.Stats.IsAlive)
         {
@@ -258,25 +266,29 @@ public class AttackManager : MonoBehaviour
     
     void HandleUnitDefeated(GameObject defeatedUnit)
     {
-        // You can add death animations, loot drops, etc. here
-        // For now, just disable the unit
-        defeatedUnit.SetActive(false);
+        // Clean up any placement manager references
+        UnitGridInfo unitInfo = defeatedUnit.GetComponent<UnitGridInfo>();
+        if (unitInfo != null && unitInfo.placementManager != null)
+        {
+            unitInfo.placementManager.SetTileOccupied(unitInfo.groundObject, unitInfo.gridPosition, false);
+        }
+        
+        // No need to clean up outlines since we're not using them anymore
+        
+        // You can add death animations, loot drops, etc. here before destruction
+        
+        // Destroy the unit completely to free memory
+        Destroy(defeatedUnit);
     }
     
-    void ClearAttackHighlights()
+    void ClearAttackRangeOverlays()
     {
-        foreach (GameObject highlight in attackRangeHighlights)
+        foreach (GameObject overlay in attackRangeOverlays)
         {
-            if (highlight != null)
-                Destroy(highlight);
+            if (overlay != null)
+                Destroy(overlay);
         }
-        attackRangeHighlights.Clear();
-        
-        // Clear target outlines
-        if (outlineController != null)
-        {
-            outlineController.ClearTargetOutlines();
-        }
+        attackRangeOverlays.Clear();
     }
     
     // Public getters
@@ -298,6 +310,6 @@ public class AttackManager : MonoBehaviour
     
     void OnDestroy()
     {
-        ClearAttackHighlights();
+        ClearAttackRangeOverlays();
     }
 }

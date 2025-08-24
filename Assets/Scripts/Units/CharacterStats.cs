@@ -89,10 +89,11 @@ public class CharacterStats
         }
     }
 
-    public void TakeDamage(int amount)
+    public int TakeDamage(int amount)
     {
         int damage = Mathf.Max(amount - Defense, 1);
         currentHP = Mathf.Clamp(currentHP - damage, 0, MaxHP);
+        return damage; // Return actual damage dealt
     }
 
     public void Heal(int amount)

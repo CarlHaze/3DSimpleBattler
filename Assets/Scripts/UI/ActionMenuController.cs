@@ -221,14 +221,14 @@ public class ActionMenuController : MonoBehaviour
     {
         if (moveButton == null) return;
         
-        // Disable move button if in placement mode or not all units are placed
+        // Disable buttons if in placement mode or initial placement not complete
         bool shouldDisable = false;
         
         if (modeManager != null && modeManager.IsInPlacementMode())
         {
             shouldDisable = true;
         }
-        else if (unitSelector != null && unitSelector.GetUnitsPlaced() < unitSelector.GetMaxUnits())
+        else if (unitSelector != null && !unitSelector.IsInitialPlacementComplete())
         {
             shouldDisable = true;
         }
@@ -238,7 +238,7 @@ public class ActionMenuController : MonoBehaviour
         
         if (shouldDisable)
         {
-            Debug.Log("Action buttons disabled - placement mode or not all units placed");
+            Debug.Log("Action buttons disabled - placement mode or initial placement not complete");
         }
     }
     
