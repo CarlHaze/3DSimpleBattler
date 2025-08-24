@@ -254,6 +254,13 @@ public class AttackManager : MonoBehaviour
         string targetName = targetCharacter.CharacterName;
         SimpleMessageLog.Log($"{attackerName} attacks {targetName} for {actualDamage} damage!");
         
+        // Notify ActionMenuController that an attack was performed to prevent auto-selection
+        ActionMenuController actionMenu = FindFirstObjectByType<ActionMenuController>();
+        if (actionMenu != null)
+        {
+            actionMenu.OnAttackPerformed();
+        }
+        
         if (!targetCharacter.Stats.IsAlive)
         {
             SimpleMessageLog.Log($"{targetName} is defeated!");
@@ -273,7 +280,19 @@ public class AttackManager : MonoBehaviour
             unitInfo.placementManager.SetTileOccupied(unitInfo.groundObject, unitInfo.gridPosition, false);
         }
         
-        // No need to clean up outlines since we're not using them anymore
+        // Clear selection if the defeated unit was selected in ActionMenuController
+        ActionMenuController actionMenu = FindFirstObjectByType<ActionMenuController>();
+        if (actionMenu != null && actionMenu.GetSelectedUnit() == defeatedUnit)
+        {
+            actionMenu.DeselectUnit();
+        }
+        
+        // Clear selection if the defeated unit was selected in MovementManager
+        UnitMovementManager movementManager = FindFirstObjectByType<UnitMovementManager>();
+        if (movementManager != null && movementManager.GetSelectedUnit() == defeatedUnit)
+        {
+            movementManager.ClearSelection();
+        }
         
         // You can add death animations, loot drops, etc. here before destruction
         
