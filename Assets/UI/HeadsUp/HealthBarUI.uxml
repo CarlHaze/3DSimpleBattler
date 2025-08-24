@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/HeadsUp/HealthBarContainer.uss?fileID=7433441132597879392&amp;guid=71274af953a650348ba75092dc092ddc&amp;type=3#HealthBarContainer" />
+    <ui:VisualElement style="flex-grow: 1; align-items: center; justify-content: center;">
+        <ui:ProgressBar value="100" title="100/100" name="HealthProgressBar" style="align-self: center; align-content: flex-start; width: 50px; -unity-font-definition: url(&quot;project://database/Assets/UI/Fonts/Vollkorn-VariableFont_wght.ttf?fileID=12800000&amp;guid=adc43e3f20e9c294cbab4d88c81099a9&amp;type=3#Vollkorn-VariableFont_wght&quot;); background-color: rgb(0, 128, 0); color: rgb(255, 255, 255); font-size: 12px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-left-color: rgb(0, 0, 0); border-right-color: rgb(0, 0, 0); border-top-color: rgb(0, 0, 0); border-bottom-color: rgb(0, 0, 0);" />
+    </ui:VisualElement>
+</ui:UXML>

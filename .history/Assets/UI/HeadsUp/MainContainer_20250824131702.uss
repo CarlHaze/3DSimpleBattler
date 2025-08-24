@@ -1,0 +1,15 @@
+:root {
+}
+
+.health_text {
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Vollkorn-VariableFont_wght.ttf?fileID=12800000&guid=adc43e3f20e9c294cbab4d88c81099a9&type=3#Vollkorn-VariableFont_wght");
+    -unity-text-align: middle-center;
+    font-size: 12px;
+}
+
+.menu {
+    background-color: rgba(35, 0, 41, 0.29);
+}
+
+.progress_bar {
+}

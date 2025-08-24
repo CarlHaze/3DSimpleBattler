@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 11400000, guid: b5317352299599c4cbdabd9673494ddc, type: 2}
+  m_PanelSettings: {fileID: 11400000, guid: d10a210c473462f4a9f82aa24fdded46, type: 2}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: 346027eff90c74440b7bc7bd963c3000, type: 3}
   m_SortingOrder: 0
@@ -1495,7 +1495,7 @@ MonoBehaviour:
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 11400000, guid: b5317352299599c4cbdabd9673494ddc, type: 2}
+  m_PanelSettings: {fileID: 11400000, guid: d10a210c473462f4a9f82aa24fdded46, type: 2}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: 30fc7da656b25764593de2bd2184a8e8, type: 3}
   m_SortingOrder: 0
@@ -1903,7 +1903,7 @@ MonoBehaviour:
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 11400000, guid: b5317352299599c4cbdabd9673494ddc, type: 2}
+  m_PanelSettings: {fileID: 11400000, guid: d10a210c473462f4a9f82aa24fdded46, type: 2}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: b655ab3c915dba143a158938e97fb714, type: 3}
   m_SortingOrder: 0
