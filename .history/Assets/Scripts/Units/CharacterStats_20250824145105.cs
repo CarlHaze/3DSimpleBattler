@@ -25,14 +25,12 @@ public class CharacterStats
     public int Attack => baseAttack + classAttackBonus;
     public int Defense => baseDefense + classDefenseBonus;
     public int Speed => baseSpeed + classSpeedBonus;
-    public int AttackRange => baseAttackRange;
     
     // Base stats getters (without class bonuses)
     public int BaseMaxHP => baseMaxHP;
     public int BaseAttack => baseAttack;
     public int BaseDefense => baseDefense;
     public int BaseSpeed => baseSpeed;
-    public int BaseAttackRange => baseAttackRange;
 
     public bool IsAlive => currentHP > 0;
 
@@ -89,11 +87,10 @@ public class CharacterStats
         }
     }
 
-    public int TakeDamage(int amount)
+    public void TakeDamage(int amount)
     {
         int damage = Mathf.Max(amount - Defense, 1);
         currentHP = Mathf.Clamp(currentHP - damage, 0, MaxHP);
-        return damage; // Return actual damage dealt
     }
 
     public void Heal(int amount)

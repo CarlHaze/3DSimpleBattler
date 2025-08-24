@@ -326,6 +326,53 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 778613540}
   m_SourcePrefab: {fileID: 100100000, guid: fc349513eb7885341975ddaff22cb9c7, type: 3}
+--- !u!1 &23693428
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 23693430}
+  - component: {fileID: 23693429}
+  m_Layer: 0
+  m_Name: AttackManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &23693429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23693428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 497e7bac2314dc645b40e43bbbe1aeae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AttackManager
+  attackRangeColor: {r: 0.9764706, g: 0.3529412, b: 0.09803922, a: 1}
+  targetableRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  attackRangeOverlayMaterial: {fileID: 2100000, guid: 694531e34cd838246a0bc78a119420cc, type: 2}
+--- !u!4 &23693430
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23693428}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.8995438, y: -4.4408636, z: 4.689316}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &50867804
 GameObject:
   m_ObjectHideFlags: 0
@@ -2265,6 +2312,7 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 50867805}
+  - {fileID: 23693430}
   - {fileID: 1979144678}
   - {fileID: 1298208650}
   - {fileID: 1667105152}

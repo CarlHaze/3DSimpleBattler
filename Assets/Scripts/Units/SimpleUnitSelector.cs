@@ -13,6 +13,7 @@ public class SimpleUnitSelector : MonoBehaviour
     
     private UnitPlacementManager placementManager;
     private int unitsPlaced = 0;
+    private bool initialPlacementComplete = false;
     
     void Start()
     {
@@ -68,6 +69,13 @@ public class SimpleUnitSelector : MonoBehaviour
     {
         unitsPlaced++;
         Debug.Log($"Units placed: {unitsPlaced}/{maxUnitsToPlace}");
+        
+        // Mark initial placement as complete when we reach max units for the first time
+        if (unitsPlaced >= maxUnitsToPlace && !initialPlacementComplete)
+        {
+            initialPlacementComplete = true;
+            Debug.Log("Initial placement phase complete - actions now available!");
+        }
     }
     
     public void OnUnitRemoved()
@@ -90,5 +98,10 @@ public class SimpleUnitSelector : MonoBehaviour
     public int GetMaxUnits()
     {
         return maxUnitsToPlace;
+    }
+    
+    public bool IsInitialPlacementComplete()
+    {
+        return initialPlacementComplete;
     }
 }
