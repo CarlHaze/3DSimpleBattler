@@ -22,7 +22,7 @@ public class UnitPlacementManager : MonoBehaviour
     
     [HideInInspector] public GridOverlayManager gridManager;
     private Camera gameCamera;
-    private bool inPlacementMode = false;
+    private ModeManager modeManager;
     private SimpleUnitSelector unitSelector;
     private SimpleHeightCheck heightCheck;
     private TerrainHeightDetector terrainHeightDetector;
@@ -38,6 +38,7 @@ public class UnitPlacementManager : MonoBehaviour
     {
         gridManager = FindFirstObjectByType<GridOverlayManager>();
         gameCamera = Camera.main;
+        modeManager = FindFirstObjectByType<ModeManager>();
         unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
         heightCheck = FindFirstObjectByType<SimpleHeightCheck>();
         terrainHeightDetector = FindFirstObjectByType<TerrainHeightDetector>();
@@ -182,56 +183,55 @@ public class UnitPlacementManager : MonoBehaviour
     
     void Update()
     {
-        ProcessInput();
-        
-        if (inPlacementMode)
+        if (modeManager != null)
         {
-            HandlePlacementPreview();
+            if (modeManager.IsInPlacementMode())
+            {
+                HandlePlacementInput();
+                HandlePlacementPreview();
+            }
+            else
+            {
+                // Make sure highlight is hidden when not in placement mode
+                HideHighlight();
+            }
         }
     }
     
-    void ProcessInput()
+    void HandlePlacementInput()
     {
-        if (Input.GetKeyDown(activationKey))
-        {
-            ToggleMode();
-        }
-        
-        if (inPlacementMode && Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
             AttemptUnitPlacement();
         }
         
-        if (inPlacementMode && (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape)))
+        if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
         {
-            ExitMode();
+            if (modeManager != null)
+            {
+                modeManager.SetMode(GameMode.Explore);
+            }
         }
     }
     
-    void ToggleMode()
+    public void OnEnterPlacementMode()
     {
         // Check if trying to enter placement mode when max units are already placed
-        if (!inPlacementMode && unitSelector != null && !unitSelector.CanPlaceMoreUnits())
+        if (unitSelector != null && !unitSelector.CanPlaceMoreUnits())
         {
             SimpleMessageLog.Log($"Maximum units already placed ({unitSelector.GetUnitsPlaced()}/{unitSelector.GetMaxUnits()})");
+            if (modeManager != null)
+            {
+                modeManager.SetMode(GameMode.Explore);
+            }
             return;
         }
         
-        inPlacementMode = !inPlacementMode;
-        
-        if (inPlacementMode)
-        {
-            SimpleMessageLog.Log("Placement mode activated - Click to place unit");
-        }
-        else
-        {
-            ExitMode();
-        }
+        SimpleMessageLog.Log("Placement mode activated - Click to place unit");
     }
     
-    void ExitMode()
+    public void OnExitPlacementMode()
     {
-        inPlacementMode = false;
         HideHighlight();
     }
     
@@ -330,9 +330,9 @@ public class UnitPlacementManager : MonoBehaviour
             SetTileOccupied(groundObj, gridPos, true);
             CreateUnit(gridPos, groundObj);
             
-            if (exitModeAfterPlacement)
+            if (exitModeAfterPlacement && modeManager != null)
             {
-                ExitMode();
+                modeManager.SetMode(GameMode.Explore);
             }
         }
     

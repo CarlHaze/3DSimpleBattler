@@ -1,0 +1,20 @@
+{
+    "asset": "cc273d71ced66d64f8222f03095ab7d1",
+    "fileName": "0198d68d-78d9-7832-ba17-4317a3f3f64a.png",
+    "prompt": "I want to make a sprite for menu selection like a pixel finger pointing similar to final fantasy games",
+    "negativePrompt": "blurry, watermark, large, realistic",
+    "model": "242b56c1-2224-41c4-8949-2ba760bbfc69",
+    "modelName": "16-bit Pixel",
+    "customSeed": -1,
+    "w3CTraceId": "b3f6a98d32fe25024a45cc007d6a6e6e",
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0
+}

@@ -31,6 +31,9 @@ public class UnitMovementManager : MonoBehaviour
     
     // Movement animation
     private bool isMoving = false;
+    
+    // Movement mode state
+    private bool inMovementMode = false;
 
     void Start()
     {
@@ -63,13 +66,10 @@ public class UnitMovementManager : MonoBehaviour
     
     void Update()
     {
-        // Handle both unit selection and movement
-        if (!isMoving)
+        // Only handle movement input when in movement mode
+        if (!isMoving && inMovementMode)
         {
-            // Only allow selection when all units are placed
-            if (!AllUnitsPlaced()) return;
-            
-            HandleInput();
+            HandleMovementInput();
         }
     }
     
@@ -79,7 +79,7 @@ public class UnitMovementManager : MonoBehaviour
         return unitSelector.GetUnitsPlaced() >= unitSelector.GetMaxUnits();
     }
     
-    void HandleInput()
+    void HandleMovementInput()
     {
         if (Input.GetMouseButtonDown(0))
         {
@@ -90,66 +90,67 @@ public class UnitMovementManager : MonoBehaviour
             {
                 GameObject clickedObject = hit.collider.gameObject;
                 
-                // First check if we clicked on a movement highlight
+                // Try to move to the clicked position
                 if (selectedUnit != null && TryMoveToPosition(hit.point, clickedObject))
                 {
-                    return; // Movement handled, don't process unit selection
+                    return; // Movement handled
                 }
-                
-                // If no movement, try to select a unit
-                HandleUnitSelection(clickedObject);
             }
         }
         
-        // Deselect with right click or escape
+        // Exit movement mode with right click or escape
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
         {
-            DeselectUnit();
+            ExitMovementMode();
         }
     }
     
-    void HandleUnitSelection(GameObject clickedObject)
+    // New methods for ActionMenu integration
+    public void SetSelectedUnit(GameObject unit, bool enterMovementMode = false)
     {
-        // Check if clicked object is a player unit
-        if (clickedObject.CompareTag("Player"))
-        {
-            SelectUnit(clickedObject);
-        }
-        else
-        {
-            DeselectUnit();
-        }
-    }
-    
-    void SelectUnit(GameObject unit)
-    {
-        // If same unit, deselect
-        if (selectedUnit == unit)
-        {
-            DeselectUnit();
-            return;
-        }
-        
         // Clear previous selection
         ClearMovementHighlights();
         
         selectedUnit = unit;
+        inMovementMode = enterMovementMode;
         
-        // Add outline to selected unit
-        if (outlineController != null)
+        if (unit != null)
         {
-            outlineController.SetSelectedUnit(selectedUnit);
+            // Add outline to selected unit
+            if (outlineController != null)
+            {
+                outlineController.SetSelectedUnit(selectedUnit);
+            }
+            
+            // Only show movement range if entering movement mode
+            if (enterMovementMode)
+            {
+                UnitGridInfo unitInfo = unit.GetComponent<UnitGridInfo>();
+                if (unitInfo != null)
+                {
+                    currentGroundObject = unitInfo.groundObject;
+                    ShowMovementRange(unitInfo.gridPosition, unitInfo.groundObject);
+                    SimpleMessageLog.Log($"Movement mode activated for {unit.name}");
+                }
+            }
+            else
+            {
+                SimpleMessageLog.Log($"Selected {unit.name}");
+            }
         }
-        
-        // Get unit's grid info
-        UnitGridInfo unitInfo = unit.GetComponent<UnitGridInfo>();
-        if (unitInfo != null)
-        {
-            currentGroundObject = unitInfo.groundObject;
-            ShowMovementRange(unitInfo.gridPosition, unitInfo.groundObject);
-            SimpleMessageLog.Log($"Selected {unit.name}");
-        }
-        
+    }
+    
+    public void ClearSelection()
+    {
+        DeselectUnit();
+    }
+    
+    public void ExitMovementMode()
+    {
+        inMovementMode = false;
+        ClearMovementHighlights();
+        validMovePositions.Clear();
+        SimpleMessageLog.Log("Exited movement mode");
     }
     
     void DeselectUnit()
@@ -165,6 +166,7 @@ public class UnitMovementManager : MonoBehaviour
         SimpleMessageLog.Log("Unit deselected");
         selectedUnit = null;
         currentGroundObject = null;
+        inMovementMode = false;
         ClearMovementHighlights();
         validMovePositions.Clear();
     }
@@ -650,8 +652,8 @@ public class UnitMovementManager : MonoBehaviour
         placementManager.SetTileOccupied(currentGroundObject, targetGridPos, true, selectedUnit);
         
         
-        // Clear selection and highlights
-        DeselectUnit();
+        // Clear movement mode and highlights after successful move
+        ExitMovementMode();
     }
     
     IEnumerator AnimateMovement(GameObject unit, Vector3 targetPosition)
@@ -914,5 +916,10 @@ public class UnitMovementManager : MonoBehaviour
     public bool IsMoving()
     {
         return isMoving;
+    }
+    
+    public bool IsInMovementMode()
+    {
+        return inMovementMode;
     }
 }
