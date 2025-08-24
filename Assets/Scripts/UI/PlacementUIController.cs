@@ -6,6 +6,8 @@ public class PlacementUIController : MonoBehaviour
     private UIDocument uiDocument;
     private SimpleUnitSelector unitSelector;
     private ModeManager modeManager;
+    private AttackManager attackManager;
+    private UnitMovementManager movementManager;
     
     // References to the labels
     private Label unitCountLabel;
@@ -38,6 +40,8 @@ public class PlacementUIController : MonoBehaviour
         // Find the unit selector and mode manager
         unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
         modeManager = FindFirstObjectByType<ModeManager>();
+        attackManager = FindFirstObjectByType<AttackManager>();
+        movementManager = FindFirstObjectByType<UnitMovementManager>();
         
         if (unitSelector == null)
         {
@@ -64,10 +68,11 @@ public class PlacementUIController : MonoBehaviour
     {
         if (unitSelector == null || modeManager == null) return;
 
-        // Update mode label
+        // Update mode label with dynamic state checking
         if (modeLabel != null)
         {
-            modeLabel.text = $"Mode: {modeManager.GetModeDisplayName()}";
+            string modeText = GetCurrentModeDisplayName();
+            modeLabel.text = $"Mode: {modeText}";
         }
         
         // Update selected unit text (show after first placement mode entry)
@@ -114,5 +119,28 @@ public class PlacementUIController : MonoBehaviour
             hasEnteredPlacementMode = true;
         }
         UpdateUI();
+    }
+    
+    private string GetCurrentModeDisplayName()
+    {
+        // Check for attack mode first (highest priority)
+        if (attackManager != null && attackManager.IsInAttackMode())
+        {
+            return "Attacking";
+        }
+        
+        // Check for movement mode next
+        if (movementManager != null && movementManager.IsInMovementMode())
+        {
+            return "Moving";
+        }
+        
+        // Fall back to regular mode manager
+        if (modeManager != null)
+        {
+            return modeManager.GetModeDisplayName();
+        }
+        
+        return "Unknown";
     }
 }

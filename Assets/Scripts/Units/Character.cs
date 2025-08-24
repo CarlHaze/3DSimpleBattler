@@ -1,49 +1,70 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Character : MonoBehaviour
 {
+    [Header("Basic Information")]
     [SerializeField] private string characterName;
-    [SerializeField] private CharacterStats stats = new CharacterStats();
     
     [Header("Character Class")]
-    [SerializeField] private bool hasWarriorClass = false;
-
-    private CharacterClass characterClass;
+    [SerializeField] private CharacterClassSO characterClass;
+    
+    [Header("Stats (Auto-populated from Class)")]
+    [SerializeField] private CharacterStats stats = new CharacterStats();
+    
+    [Header("Skills")]
+    [SerializeField] private List<SkillSO> knownSkills = new List<SkillSO>();
 
     public string CharacterName => characterName;
     public CharacterStats Stats => stats;
-    public CharacterClass CharacterClass => characterClass;
+    public CharacterClassSO CharacterClass => characterClass;
+    public List<SkillSO> KnownSkills => knownSkills;
 
     private void Awake()
+    {
+        InitializeCharacter();
+    }
+    
+    private void InitializeCharacter()
     {
         if (stats == null)
         {
             stats = new CharacterStats();
         }
         
-        ApplyCharacterClass();
-        stats.Initialize();
+        // Initialize stats with this character reference for class logic callbacks
+        if (characterClass != null)
+        {
+            stats.InitializeFromClassSO(characterClass, this);
+            InitializeSkills();
+        }
+        else
+        {
+            stats.Initialize(this);
+        }
+        
+        // Set default name if not provided
+        if (string.IsNullOrEmpty(characterName))
+        {
+            characterName = characterClass != null ? characterClass.className : "Unnamed Character";
+        }
     }
     
-    private void ApplyCharacterClass()
+    private void InitializeSkills()
     {
-        // Clear any existing class first
-        characterClass = null;
+        if (characterClass == null) return;
         
-        // Simple class assignment based on boolean (can be expanded later)
-        if (hasWarriorClass)
+        // Add starting skills from class
+        foreach (var skill in characterClass.startingSkills)
         {
-            characterClass = new WarriorClass();
-        }
-        
-        // Apply class bonuses if we have stats
-        if (stats != null && characterClass != null)
-        {
-            stats.ApplyClassBonuses(characterClass);
+            if (skill != null && !knownSkills.Contains(skill))
+            {
+                knownSkills.Add(skill);
+            }
         }
     }
     
-    public void SetCharacterClass(CharacterClass newClass)
+    public void SetCharacterClass(CharacterClassSO newClass)
     {
         // Clear old class bonuses
         if (characterClass != null)
@@ -55,7 +76,8 @@ public class Character : MonoBehaviour
         characterClass = newClass;
         if (characterClass != null)
         {
-            stats.ApplyClassBonuses(characterClass);
+            stats.InitializeFromClassSO(characterClass, this);
+            InitializeSkills();
         }
     }
     
@@ -63,8 +85,49 @@ public class Character : MonoBehaviour
     {
         if (characterClass != null)
         {
-            return characterClass.GetDescription();
+            return $"{characterClass.className}: {characterClass.description}";
         }
         return "No class assigned";
+    }
+    
+    // Skill management
+    public bool CanUseSkill(SkillSO skill)
+    {
+        if (!knownSkills.Contains(skill)) return false;
+        if (!skill.CanUseSkill(this)) return false;
+        if (characterClass?.ClassLogic != null)
+        {
+            return characterClass.ClassLogic.CanUseSkill(this, skill);
+        }
+        return true;
+    }
+    
+    public void LearnSkill(SkillSO skill)
+    {
+        if (skill != null && !knownSkills.Contains(skill))
+        {
+            knownSkills.Add(skill);
+        }
+    }
+    
+    public void ForgetSkill(SkillSO skill)
+    {
+        if (knownSkills.Contains(skill))
+        {
+            knownSkills.Remove(skill);
+        }
+    }
+    
+    // Validation for designer use
+    void OnValidate()
+    {
+        if (Application.isPlaying) return;
+        
+        // Auto-populate stats from class in editor
+        if (characterClass != null && stats != null)
+        {
+            // This helps designers see the stats in the inspector
+            InitializeCharacter();
+        }
     }
 }

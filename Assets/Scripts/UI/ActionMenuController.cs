@@ -17,6 +17,8 @@ public class ActionMenuController : MonoBehaviour
     // Track selected unit
     private GameObject selectedUnit;
     private bool isMenuVisible = false;
+    private float lastAttackTime = 0f;
+    private const float ATTACK_COOLDOWN = 0.1f; // Prevent selection immediately after attack
     
     void Start()
     {
@@ -111,6 +113,12 @@ public class ActionMenuController : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
+            // Don't allow unit selection immediately after an attack
+            if (Time.time - lastAttackTime < ATTACK_COOLDOWN)
+            {
+                return;
+            }
+            
             // Check if we're clicking on a UI element first
             if (IsClickingOnUI())
             {
@@ -311,5 +319,10 @@ public class ActionMenuController : MonoBehaviour
     public bool IsMenuVisible()
     {
         return isMenuVisible;
+    }
+    
+    public void OnAttackPerformed()
+    {
+        lastAttackTime = Time.time;
     }
 }
