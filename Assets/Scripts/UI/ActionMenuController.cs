@@ -6,11 +6,13 @@ public class ActionMenuController : MonoBehaviour
     private UIDocument uiDocument;
     private VisualElement panel;
     private Button moveButton;
+    private Button attackButton;
     private Button cancelButton;
     
     private UnitMovementManager movementManager;
     private ModeManager modeManager;
     private SimpleUnitSelector unitSelector;
+    private AttackManager attackManager;
     
     // Track selected unit
     private GameObject selectedUnit;
@@ -23,6 +25,7 @@ public class ActionMenuController : MonoBehaviour
         movementManager = FindFirstObjectByType<UnitMovementManager>();
         modeManager = FindFirstObjectByType<ModeManager>();
         unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
+        attackManager = FindFirstObjectByType<AttackManager>();
         
         if (uiDocument == null)
         {
@@ -46,6 +49,7 @@ public class ActionMenuController : MonoBehaviour
         VisualElement root = uiDocument.rootVisualElement;
         panel = root.Q<VisualElement>("Panel");
         moveButton = root.Q<Button>("MoveButton");
+        attackButton = root.Q<Button>("ATTButton");
         cancelButton = root.Q<Button>("CancelButton");
         
         if (panel == null)
@@ -60,6 +64,12 @@ public class ActionMenuController : MonoBehaviour
             return;
         }
         
+        if (attackButton == null)
+        {
+            Debug.LogError("ATTButton not found!");
+            return;
+        }
+        
         if (cancelButton == null)
         {
             Debug.LogError("CancelButton not found!");
@@ -68,6 +78,7 @@ public class ActionMenuController : MonoBehaviour
         
         // Set up button callbacks
         moveButton.clicked += OnMoveButtonPressed;
+        attackButton.clicked += OnAttackButtonPressed;
         cancelButton.clicked += OnCancelButtonPressed;
         
         // Hide menu initially
@@ -81,10 +92,15 @@ public class ActionMenuController : MonoBehaviour
         // Check for unit selection when not in placement mode and not in movement mode
         if (modeManager != null && !modeManager.IsInPlacementMode())
         {
-            // Don't handle unit selection if movement manager is in movement mode
+            // Don't handle unit selection if movement manager is in movement mode or attack manager is active
             if (movementManager != null && (movementManager.IsMoving() || movementManager.IsInMovementMode()))
             {
                 return; // Movement system is handling input
+            }
+            
+            if (attackManager != null && attackManager.IsInAttackMode())
+            {
+                return; // Attack system is handling input
             }
             
             CheckForUnitSelection();
@@ -218,10 +234,11 @@ public class ActionMenuController : MonoBehaviour
         }
         
         moveButton.SetEnabled(!shouldDisable);
+        attackButton.SetEnabled(!shouldDisable);
         
         if (shouldDisable)
         {
-            Debug.Log("Move button disabled - placement mode or not all units placed");
+            Debug.Log("Action buttons disabled - placement mode or not all units placed");
         }
     }
     
@@ -248,6 +265,22 @@ public class ActionMenuController : MonoBehaviour
         }
         
         // Hide the action menu while in movement mode
+        HideActionMenu();
+    }
+    
+    void OnAttackButtonPressed()
+    {
+        if (selectedUnit == null) return;
+        
+        Debug.Log("Attack button pressed");
+        
+        // Enter attack mode for the selected unit
+        if (attackManager != null)
+        {
+            attackManager.StartAttackMode(selectedUnit);
+        }
+        
+        // Hide the action menu while in attack mode
         HideActionMenu();
     }
     

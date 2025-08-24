@@ -17,6 +17,7 @@ public class SimpleUnitOutline : MonoBehaviour
     
     // Track outlined units
     private Dictionary<GameObject, GameObject> outlineObjects = new Dictionary<GameObject, GameObject>();
+    private Dictionary<GameObject, GameObject> targetOutlineObjects = new Dictionary<GameObject, GameObject>();
     private GameObject selectedUnit;
     private Coroutine pulseCoroutine;
     
@@ -224,6 +225,16 @@ public class SimpleUnitOutline : MonoBehaviour
             }
         }
         outlineObjects.Clear();
+        
+        // Clean up all target outline objects
+        foreach (var outlineObj in targetOutlineObjects.Values)
+        {
+            if (outlineObj != null)
+            {
+                Destroy(outlineObj);
+            }
+        }
+        targetOutlineObjects.Clear();
     }
     
     // Public getters
@@ -235,5 +246,127 @@ public class SimpleUnitOutline : MonoBehaviour
     public GameObject GetSelectedUnit()
     {
         return selectedUnit;
+    }
+    
+    // Target outline methods for attack system
+    public void AddTargetOutline(GameObject unit, Color color)
+    {
+        if (unit == null || targetOutlineObjects.ContainsKey(unit)) return;
+        
+        // Create target outline object
+        GameObject outlineObj = CreateTargetOutlineObject(unit, color);
+        if (outlineObj != null)
+        {
+            targetOutlineObjects[unit] = outlineObj;
+            
+            if (enableDebugLogs)
+                Debug.Log($"Added target outline to {unit.name}");
+        }
+    }
+    
+    public void RemoveTargetOutline(GameObject unit)
+    {
+        if (unit == null || !targetOutlineObjects.ContainsKey(unit)) return;
+        
+        // Destroy target outline object
+        GameObject outlineObj = targetOutlineObjects[unit];
+        if (outlineObj != null)
+        {
+            Destroy(outlineObj);
+        }
+        
+        targetOutlineObjects.Remove(unit);
+        
+        if (enableDebugLogs)
+            Debug.Log($"Removed target outline from {unit.name}");
+    }
+    
+    public void ClearTargetOutlines()
+    {
+        foreach (var kvp in targetOutlineObjects)
+        {
+            if (kvp.Value != null)
+            {
+                Destroy(kvp.Value);
+            }
+        }
+        targetOutlineObjects.Clear();
+        
+        if (enableDebugLogs)
+            Debug.Log("Cleared all target outlines");
+    }
+    
+    private GameObject CreateTargetOutlineObject(GameObject unit, Color color)
+    {
+        // Get the main renderer from the unit
+        Renderer unitRenderer = unit.GetComponent<Renderer>();
+        if (unitRenderer == null)
+        {
+            // Try to find renderer in children
+            unitRenderer = unit.GetComponentInChildren<Renderer>();
+        }
+        
+        if (unitRenderer == null)
+        {
+            Debug.LogWarning($"No renderer found on target unit {unit.name}");
+            return null;
+        }
+        
+        // Create target outline object
+        GameObject outlineObj = new GameObject($"{unit.name}_TargetOutline");
+        outlineObj.transform.SetParent(unit.transform);
+        outlineObj.transform.localPosition = Vector3.zero;
+        outlineObj.transform.localRotation = Quaternion.identity;
+        outlineObj.transform.localScale = Vector3.one * (1f + outlineWidth);
+        
+        // Copy the mesh
+        MeshFilter unitMeshFilter = unitRenderer.GetComponent<MeshFilter>();
+        if (unitMeshFilter != null && unitMeshFilter.sharedMesh != null)
+        {
+            // Add mesh filter and renderer
+            MeshFilter outlineMeshFilter = outlineObj.AddComponent<MeshFilter>();
+            MeshRenderer outlineRenderer = outlineObj.AddComponent<MeshRenderer>();
+            
+            // Set mesh
+            outlineMeshFilter.sharedMesh = unitMeshFilter.sharedMesh;
+            
+            // Create target outline material with specified color
+            Material outlineMaterial = CreateTargetOutlineMaterial(color);
+            outlineRenderer.material = outlineMaterial;
+            
+            // Set rendering order (render behind the original)
+            outlineRenderer.sortingOrder = -1;
+        }
+        else
+        {
+            Debug.LogWarning($"No mesh found on target unit {unit.name}");
+            Destroy(outlineObj);
+            return null;
+        }
+        
+        return outlineObj;
+    }
+    
+    private Material CreateTargetOutlineMaterial(Color color)
+    {
+        // Create a simple unlit material for the target outline
+        Material mat = new Material(Shader.Find("Unlit/Color"));
+        mat.color = color;
+        
+        // Make it slightly transparent
+        mat.SetFloat("_Mode", 3); // Transparent mode
+        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        mat.SetInt("_ZWrite", 0);
+        mat.DisableKeyword("_ALPHATEST_ON");
+        mat.EnableKeyword("_ALPHABLEND_ON");
+        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        mat.renderQueue = 2999; // Render before transparent objects
+        
+        Color transparentColor = color;
+        transparentColor.a = 0.8f;
+        mat.color = transparentColor;
+        
+        return mat;
     }
 }
