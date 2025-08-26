@@ -36,6 +36,9 @@ public class CharacterStats
     public int BaseAttackRange => baseAttackRange;
 
     public bool IsAlive => currentHP > 0;
+    
+    // Debug display for inspector
+    public string StatsDisplay => $"HP: {CurrentHP}/{MaxHP} | ATK: {Attack} | DEF: {Defense} | SPD: {Speed} | RNG: {AttackRange}";
 
     public CharacterStats()
     {
@@ -66,11 +69,8 @@ public class CharacterStats
         // Apply class bonuses
         ApplyClassBonuses(classSO);
         
-        // Initialize HP
-        if (currentHP == 0)
-        {
-            currentHP = MaxHP;
-        }
+        // Always reset HP to match new MaxHP (important for designer workflow)
+        currentHP = MaxHP;
     }
     
     public void ApplyClassBonuses(CharacterClassSO classSO)

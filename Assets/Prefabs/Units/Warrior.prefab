@@ -128,13 +128,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterName: Warrior
+  characterClass: {fileID: 11400000, guid: 9fb4271dc76423646929db99fad275e7, type: 2}
   stats:
     baseMaxHP: 100
-    currentHP: 100
+    currentHP: 120
     baseAttack: 10
     baseDefense: 5
     baseSpeed: 5
-  hasWarriorClass: 1
+    baseAttackRange: 1
+  calculatedStats: 'HP: 120/120 | ATK: 60 | DEF: 10 | SPD: 4 | RNG: 1'
+  knownSkills: []
 --- !u!1001 &7314227868117074938
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -149,7 +152,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 629096956391680684, guid: 836f315406350e8448f38d1cc469b120, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.449
+      value: 1.3
       objectReference: {fileID: 0}
     - target: {fileID: 629096956391680684, guid: 836f315406350e8448f38d1cc469b120, type: 3}
       propertyPath: m_LocalPosition.z

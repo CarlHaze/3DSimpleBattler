@@ -12,6 +12,9 @@ public class Character : MonoBehaviour
     [Header("Stats (Auto-populated from Class)")]
     [SerializeField] private CharacterStats stats = new CharacterStats();
     
+    [Header("Debug Info (Read Only)")]
+    [SerializeField, ReadOnly] private string calculatedStats = "";
+    
     [Header("Skills")]
     [SerializeField] private List<SkillSO> knownSkills = new List<SkillSO>();
 
@@ -126,8 +129,22 @@ public class Character : MonoBehaviour
         // Auto-populate stats from class in editor
         if (characterClass != null && stats != null)
         {
-            // This helps designers see the stats in the inspector
-            InitializeCharacter();
+            // Reset stats to avoid accumulating bonuses
+            stats = new CharacterStats();
+            stats.InitializeFromClassSO(characterClass, this);
+            
+            // Update debug display
+            calculatedStats = stats.StatsDisplay;
+            
+            // Set default name if not provided
+            if (string.IsNullOrEmpty(characterName))
+            {
+                characterName = characterClass.className;
+            }
+        }
+        else
+        {
+            calculatedStats = "No class assigned";
         }
     }
 }

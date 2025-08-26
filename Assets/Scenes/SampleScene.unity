@@ -1747,7 +1747,7 @@ MonoBehaviour:
   gridLayerMask:
     serializedVersion: 2
     m_Bits: 1
-  enableDebugLogs: 1
+  enableDebugLogs: 0
 --- !u!114 &1419738095
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2087,7 +2087,7 @@ MonoBehaviour:
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 136
-  debugRaycasts: 1
+  debugRaycasts: 0
 --- !u!4 &1745696331
 Transform:
   m_ObjectHideFlags: 0
@@ -2123,7 +2123,7 @@ MonoBehaviour:
   invalidMoveColor: {r: 1, g: 0, b: 0, a: 1}
   highlightAlpha: 0.7
   maxHeightDifference: 1.5
-  enableDebugLogs: 1
+  enableDebugLogs: 0
   clickDebounceTime: 0.1
 --- !u!1 &1778389199
 GameObject:
