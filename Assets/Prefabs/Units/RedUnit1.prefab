@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5073359085452754842}
   - component: {fileID: 473499132907548232}
   - component: {fileID: -2343763062640500081}
+  - component: {fileID: 1234567890123456789}
   m_Layer: 6
   m_Name: RedUnit1
   m_TagString: Enemy
@@ -190,6 +191,21 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 836f315406350e8448f38d1cc469b120, type: 3}
+--- !u!114 &1234567890123456789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5726333349782792524}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6070f46a8731f04e99e9ce325ed506d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnitGridInfo
+  gridPosition: {x: 0, y: 0}
+  groundObject: {fileID: 0}
+  placementManager: {fileID: 0}
 --- !u!4 &5949964655222860054 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 629096956391680684, guid: 836f315406350e8448f38d1cc469b120, type: 3}
