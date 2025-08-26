@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/MoveCounter/container.uss?fileID=7433441132597879392&amp;guid=0fc0bf926c0f9164cbb52b33fdb1e31f&amp;type=3#container" />
+    <ui:VisualElement name="Container" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0.45); width: 350px; height: 50px; translate: 0 0; align-items: center; justify-content: center; align-content: center; align-self: center; max-height: 50px; max-width: 350px; border-bottom-width: 10px; border-top-width: 0;">
+        <ui:Label text="Round" name="RoundLabel" class="label" style="align-items: center; justify-content: center;" />
+    </ui:VisualElement>
+</ui:UXML>

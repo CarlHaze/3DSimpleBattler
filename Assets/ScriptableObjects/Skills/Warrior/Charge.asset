@@ -20,7 +20,7 @@ MonoBehaviour:
   manaCost: 10
   cooldown: 5
   range: 2
-  baseDamage: 10
+  baseDamage: 1000
   healing: 0
   damageMultiplier: 1
   statusEffects:

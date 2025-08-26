@@ -480,11 +480,20 @@ public class UnitGridInfo : MonoBehaviour
     {
         if (placementManager != null)
         {
-            // Get the unit selector to notify of removal
-            SimpleUnitSelector unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
-            if (unitSelector != null)
+            // Only decrement unit count if this is a player unit
+            if (gameObject.CompareTag("Player"))
             {
-                unitSelector.OnUnitRemoved();
+                // Get the unit selector to notify of removal
+                SimpleUnitSelector unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
+                if (unitSelector != null)
+                {
+                    unitSelector.OnUnitRemoved();
+                    Debug.Log($"UnitGridInfo.OnDestroy: Player unit {gameObject.name} removed - unit count decremented");
+                }
+            }
+            else
+            {
+                Debug.Log($"UnitGridInfo.OnDestroy: Enemy unit {gameObject.name} removed - unit count NOT decremented");
             }
             
             // Clear the tile occupation (but don't destroy the unit since it's already being destroyed)
