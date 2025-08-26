@@ -1,0 +1,17 @@
+:root {
+}
+
+.label {
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Texturina-VariableFont_opsz,wght.ttf?fileID=12800000&guid=5a0a396b52ce8a2458a3ab1cf1a9f9d9&type=3#Texturina-VariableFont_opsz,wght");
+    font-size: 42px;
+    -unity-text-align: middle-center;
+    justify-content: center;
+    align-items: center;
+    align-self: center;
+    align-content: center;
+    color: rgb(255, 255, 255);
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}

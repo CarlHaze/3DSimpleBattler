@@ -10,25 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: caa687d5d4b2781469b8aba97346e692, type: 3}
-  m_Name: Charge
+  m_Name: LookAhead
   m_EditorClassIdentifier: Assembly-CSharp::SkillSO
-  skillName: Charge
-  description: Charge to target location dealing some damage and stunning for 1 turn
-  skillIcon: {fileID: 21300000, guid: b623d7f120f65d9458671f00f90aa514, type: 3}
+  skillName: Long Ranged Bow Attack
+  description: Take aim and shoot further than before
+  skillIcon: {fileID: 0}
   skillType: 0
   targetType: 2
-  manaCost: 10
-  cooldown: 5
-  range: 2
-  baseDamage: 1000
+  manaCost: 5
+  cooldown: 1
+  range: 5
+  baseDamage: 0
   healing: 0
-  damageMultiplier: 1
-  statusEffects:
-  - {fileID: 0}
+  damageMultiplier: 0.5
+  statusEffects: []
   animationTrigger: 
   vfxPrefab: {fileID: 0}
   soundEffect: {fileID: 0}
   minLevel: 1
   prerequisiteSkills: []
   requiredClasses:
-  - Warrior
+  - Archer
