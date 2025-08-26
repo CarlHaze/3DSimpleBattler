@@ -550,7 +550,7 @@ public class SkillManager : MonoBehaviour
         int skillDamage = Mathf.RoundToInt(currentSkill.baseDamage + (attackerCharacter.Stats.Attack * currentSkill.damageMultiplier));
         
         // Apply damage or healing
-        if (currentSkill.baseDamage > 0)
+        if (skillDamage > 0)
         {
             int actualDamage = targetCharacter.Stats.TakeDamage(skillDamage, attackerCharacter);
             SimpleMessageLog.Log($"{attackerCharacter.CharacterName} uses {currentSkill.skillName} on {targetCharacter.CharacterName} for {actualDamage} damage!");
