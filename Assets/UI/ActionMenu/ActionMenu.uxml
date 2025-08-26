@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/ActionMenu/action_menu.uss?fileID=7433441132597879392&amp;guid=8f1ec4737e92543498f6edf49df3c259&amp;type=3#action_menu" />
-    <ui:VisualElement name="Panel" class="hide" style="flex-grow: 1; bottom: 0; right: 0; top: 0; left: 0;">
+    <ui:VisualElement name="Panel" style="flex-grow: 1; bottom: 0; right: 0; top: 0; left: 0;">
         <ui:VisualElement name="Container" class="container" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/UI/Materials/el_03_02.png?fileID=2800000&amp;guid=88cb925a4b5c9b74e8c12a1ad3828c53&amp;type=3#el_03_02&quot;); background-size: 200px 400px; translate: 306px 720px; width: 200px; max-width: 240px; max-height: 145px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; background-color: rgba(0, 0, 0, 0); -unity-background-image-tint-color: rgb(255, 255, 255); -unity-background-scale-mode: scale-and-crop;">
             <ui:Button text="Attack" name="ATTButton" class="button" />
             <ui:Button text="Move&#10;" name="MoveButton" class="button" />

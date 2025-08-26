@@ -24,7 +24,7 @@ MonoBehaviour:
   attackBonus: 20
   defenseBonus: -5
   speedBonus: 3
-  attackRangeBonus: 3
+  attackRangeBonus: 2
   classLogic: {fileID: 0}
   availableSkills: []
   startingSkills: []

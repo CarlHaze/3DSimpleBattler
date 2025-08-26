@@ -13,12 +13,16 @@ public class ActionMenuController : MonoBehaviour
     private ModeManager modeManager;
     private SimpleUnitSelector unitSelector;
     private AttackManager attackManager;
+    private SkillManager skillManager;
+    private SkillSelectionController skillSelectionController;
     
     // Track selected unit
     private GameObject selectedUnit;
     private bool isMenuVisible = false;
     private float lastAttackTime = 0f;
+    private float lastSkillTime = 0f;
     private const float ATTACK_COOLDOWN = 0.1f; // Prevent selection immediately after attack
+    private const float SKILL_COOLDOWN = 0.1f; // Prevent selection immediately after skill use
     
     void Start()
     {
@@ -28,6 +32,8 @@ public class ActionMenuController : MonoBehaviour
         modeManager = FindFirstObjectByType<ModeManager>();
         unitSelector = FindFirstObjectByType<SimpleUnitSelector>();
         attackManager = FindFirstObjectByType<AttackManager>();
+        skillManager = FindFirstObjectByType<SkillManager>();
+        skillSelectionController = FindFirstObjectByType<SkillSelectionController>();
         
         if (uiDocument == null)
         {
@@ -105,6 +111,17 @@ public class ActionMenuController : MonoBehaviour
                 return; // Attack system is handling input
             }
             
+            if (skillManager != null && skillManager.IsInSkillMode())
+            {
+                return; // Skill system is handling input
+            }
+            
+            // Don't handle unit selection if skill menu is visible
+            if (skillSelectionController != null && skillSelectionController.IsSkillMenuVisible())
+            {
+                return; // Skill selection system is handling input
+            }
+            
             CheckForUnitSelection();
         }
     }
@@ -113,8 +130,13 @@ public class ActionMenuController : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            // Don't allow unit selection immediately after an attack
+            // Don't allow unit selection immediately after an attack or skill use
             if (Time.time - lastAttackTime < ATTACK_COOLDOWN)
+            {
+                return;
+            }
+            
+            if (Time.time - lastSkillTime < SKILL_COOLDOWN)
             {
                 return;
             }
@@ -282,14 +304,21 @@ public class ActionMenuController : MonoBehaviour
         
         Debug.Log("Attack button pressed");
         
-        // Enter attack mode for the selected unit
-        if (attackManager != null)
+        // Show skill selection menu instead of directly entering attack mode
+        if (skillSelectionController != null)
         {
-            attackManager.StartAttackMode(selectedUnit);
+            skillSelectionController.ShowSkillMenu(selectedUnit);
+            HideActionMenu();
         }
-        
-        // Hide the action menu while in attack mode
-        HideActionMenu();
+        else
+        {
+            // Fallback to basic attack if skill system not available
+            if (attackManager != null)
+            {
+                attackManager.StartAttackMode(selectedUnit);
+            }
+            HideActionMenu();
+        }
     }
     
     void OnCancelButtonPressed()
@@ -324,5 +353,10 @@ public class ActionMenuController : MonoBehaviour
     public void OnAttackPerformed()
     {
         lastAttackTime = Time.time;
+    }
+    
+    public void OnSkillPerformed()
+    {
+        lastSkillTime = Time.time;
     }
 }
