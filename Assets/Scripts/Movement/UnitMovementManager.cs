@@ -605,6 +605,25 @@ public class UnitMovementManager : MonoBehaviour
         UnitGridInfo unitInfo = selectedUnit.GetComponent<UnitGridInfo>();
         if (unitInfo == null) return;
         
+        // Check if unit has enough MP for this move
+        Character character = selectedUnit.GetComponent<Character>();
+        if (character?.Stats != null)
+        {
+            // Calculate movement cost (1 MP per tile moved)
+            int distance = Mathf.Abs(targetGridPos.x - unitInfo.gridPosition.x) + Mathf.Abs(targetGridPos.y - unitInfo.gridPosition.y);
+            int moveCost = Mathf.Max(1, distance); // At least 1 MP per move
+            
+            if (!character.Stats.CanSpendMP(moveCost))
+            {
+                SimpleMessageLog.Log($"{character.CharacterName} doesn't have enough Move Points! Need {moveCost}, have {character.Stats.CurrentMP}");
+                return;
+            }
+            
+            // Spend the move points
+            character.Stats.SpendMP(moveCost);
+            Debug.Log($"{character.CharacterName} spent {moveCost} MP for movement - remaining: {character.Stats.CurrentMP}");
+        }
+        
         // Clear old position in placement manager
         placementManager.SetTileOccupied(unitInfo.groundObject, unitInfo.gridPosition, false);
         
@@ -654,6 +673,15 @@ public class UnitMovementManager : MonoBehaviour
         
         // Clear movement mode and highlights after successful move
         ExitMovementMode();
+        
+        // Keep unit selected and show action menu after movement for player units
+        TurnManager turnManager = FindFirstObjectByType<TurnManager>();
+        if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat && 
+            turnManager.IsPlayerTurn() && selectedUnit == turnManager.GetCurrentUnit())
+        {
+            // Re-select the unit to show the action menu after a small delay
+            Invoke(nameof(ReselectUnitAfterMove), 0.1f);
+        }
     }
     
     IEnumerator AnimateMovement(GameObject unit, Vector3 targetPosition)
@@ -895,6 +923,16 @@ public class UnitMovementManager : MonoBehaviour
         }
         
         return 1f; // Default height
+    }
+    
+    void ReselectUnitAfterMove()
+    {
+        // Re-select the unit to show the action menu
+        ActionMenuController actionMenu = FindFirstObjectByType<ActionMenuController>();
+        if (actionMenu != null && selectedUnit != null)
+        {
+            actionMenu.SelectUnit(selectedUnit);
+        }
     }
     
     void OnDestroy()

@@ -1,0 +1,2 @@
+Background color for panel: 242424
+Border Color: C3C3C3

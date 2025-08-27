@@ -38,6 +38,7 @@ public class SkillSO : ScriptableObject
         if (string.IsNullOrEmpty(skillName))
             skillName = name;
             
+        manaCost = Mathf.Max(0, manaCost);
         cooldown = Mathf.Max(0, cooldown);
         range = Mathf.Max(1, range);
         minLevel = Mathf.Max(1, minLevel);

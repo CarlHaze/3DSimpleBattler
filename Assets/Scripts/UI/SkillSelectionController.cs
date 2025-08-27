@@ -134,9 +134,9 @@ public class SkillSelectionController : MonoBehaviour
             else
             {
                 skillButton.text = $"{skill.skillName}";
-                if (skill.manaCost > 0)
+                if (skill.apCost > 0)
                 {
-                    skillButton.text += $" (Cost: {skill.manaCost})";
+                    skillButton.text += $" (AP: {skill.apCost})";
                 }
                 skillButton.clicked += () => OnSkillSelected(skill);
             }

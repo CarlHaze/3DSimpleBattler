@@ -2,7 +2,7 @@
 }
 
 .label {
-    -unity-font-definition: url("project://database/Assets/UI/Fonts/Texturina-VariableFont_opsz,wght.ttf?fileID=12800000&guid=5a0a396b52ce8a2458a3ab1cf1a9f9d9&type=3#Texturina-VariableFont_opsz,wght");
+    -unity-font-definition: url("project://database/Assets/UI/Fonts/Vollkorn-VariableFont_wght.ttf?fileID=12800000&guid=adc43e3f20e9c294cbab4d88c81099a9&type=3#Vollkorn-VariableFont_wght");
     font-size: 42px;
     -unity-text-align: middle-center;
     justify-content: center;
@@ -14,4 +14,5 @@
     left: 0;
     bottom: 0;
     right: 0;
+    border-top-width: 12px;
 }

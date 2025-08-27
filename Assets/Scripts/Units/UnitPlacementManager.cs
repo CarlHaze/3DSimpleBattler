@@ -309,11 +309,24 @@ public class UnitPlacementManager : MonoBehaviour
     
     void AttemptUnitPlacement()
     {
-        if (currentGroundObject == null) return;
+        Debug.Log($"AttemptUnitPlacement: currentGroundObject={currentGroundObject}, playerPrefab={playerPrefab}");
+        
+        if (currentGroundObject == null) 
+        {
+            Debug.Log("Cannot place unit - no ground object");
+            return;
+        }
+        
+        if (playerPrefab == null)
+        {
+            Debug.Log("Cannot place unit - no prefab selected");
+            return;
+        }
         
         // Check unit limit first
         if (unitSelector != null && !unitSelector.CanPlaceMoreUnits())
         {
+            Debug.Log("Cannot place unit - unit limit reached");
             return;
         }
         
@@ -325,6 +338,8 @@ public class UnitPlacementManager : MonoBehaviour
         bool isObstructed = IsPositionObstructed(gridPos, groundObj);
         bool isReachable = heightCheck == null || heightCheck.IsPositionReachable(gridPos, groundObj);
         
+        Debug.Log($"Placement validation - Valid:{isValidPosition}, Occupied:{isOccupied}, Obstructed:{isObstructed}, Reachable:{isReachable}");
+        
         if (isValidPosition && !isOccupied && !isObstructed && isReachable)
         {
             SetTileOccupied(groundObj, gridPos, true);
@@ -334,6 +349,10 @@ public class UnitPlacementManager : MonoBehaviour
             {
                 modeManager.SetMode(GameMode.Explore);
             }
+        }
+        else
+        {
+            Debug.Log("Unit placement failed - validation checks failed");
         }
     
     }
