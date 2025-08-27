@@ -19,6 +19,7 @@ public class AttackManager : MonoBehaviour
     private List<GameObject> validTargets = new List<GameObject>();
     private bool inAttackMode = false;
     private GameObject currentGroundObject;
+    private GameObject unitToReselectAfterAttack;
     
     void Start()
     {
@@ -243,6 +244,17 @@ public class AttackManager : MonoBehaviour
             return;
         }
         
+        // Check if attacker has enough AP for basic attack
+        if (!attackerCharacter.Stats.CanSpendAP(1))
+        {
+            SimpleMessageLog.Log($"{attackerCharacter.CharacterName} doesn't have enough AP to attack!");
+            ExitAttackMode();
+            return;
+        }
+        
+        // Consume 1 AP for basic attack
+        attackerCharacter.Stats.SpendAP(1);
+        
         // Get base attack power
         int attackPower = attackerCharacter.Stats.Attack;
         
@@ -273,6 +285,7 @@ public class AttackManager : MonoBehaviour
             actionMenu.OnAttackPerformed();
         }
         
+        // Handle defeated unit first
         if (!targetCharacter.Stats.IsAlive)
         {
             SimpleMessageLog.Log($"{targetName} is defeated!");
@@ -286,8 +299,21 @@ public class AttackManager : MonoBehaviour
             HandleUnitDefeated(target);
         }
         
-        // Exit attack mode after successful attack
+        // Store the attacking unit before exiting attack mode
+        GameObject unitToReselect = attackingUnit;
+        
+        // Exit attack mode immediately
         ExitAttackMode();
+        
+        // Keep unit selected and show action menu after attack for player units
+        TurnManager turnManager = FindFirstObjectByType<TurnManager>();
+        if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat && 
+            turnManager.IsPlayerTurn() && unitToReselect == turnManager.GetCurrentUnit())
+        {
+            // Store the unit for re-selection and invoke after delay
+            unitToReselectAfterAttack = unitToReselect;
+            Invoke(nameof(ReselectUnitAfterAttack), 0.1f);
+        }
     }
     
     void HandleUnitDefeated(GameObject defeatedUnit)
@@ -344,6 +370,26 @@ public class AttackManager : MonoBehaviour
     public GameObject GetAttackingUnit()
     {
         return attackingUnit;
+    }
+    
+    void EndPlayerTurnDelayed()
+    {
+        TurnManager turnManager = FindFirstObjectByType<TurnManager>();
+        if (turnManager != null)
+        {
+            turnManager.EndTurn();
+        }
+    }
+    
+    void ReselectUnitAfterAttack()
+    {
+        // Re-select the unit to show the action menu
+        ActionMenuController actionMenu = FindFirstObjectByType<ActionMenuController>();
+        if (actionMenu != null && unitToReselectAfterAttack != null)
+        {
+            actionMenu.SelectUnit(unitToReselectAfterAttack);
+            unitToReselectAfterAttack = null; // Clear the reference after use
+        }
     }
     
     void OnDestroy()

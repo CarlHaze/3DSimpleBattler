@@ -8,6 +8,7 @@ public class ActionMenuController : MonoBehaviour
     private Button moveButton;
     private Button attackButton;
     private Button cancelButton;
+    private Button endButton;
     
     private UnitMovementManager movementManager;
     private ModeManager modeManager;
@@ -15,6 +16,7 @@ public class ActionMenuController : MonoBehaviour
     private AttackManager attackManager;
     private SkillManager skillManager;
     private SkillSelectionController skillSelectionController;
+    private TurnManager turnManager;
     
     // Track selected unit
     private GameObject selectedUnit;
@@ -34,6 +36,13 @@ public class ActionMenuController : MonoBehaviour
         attackManager = FindFirstObjectByType<AttackManager>();
         skillManager = FindFirstObjectByType<SkillManager>();
         skillSelectionController = FindFirstObjectByType<SkillSelectionController>();
+        turnManager = FindFirstObjectByType<TurnManager>();
+        
+        // Subscribe to turn manager events
+        if (turnManager != null)
+        {
+            turnManager.OnPhaseChange += OnBattlePhaseChanged;
+        }
         
         if (uiDocument == null)
         {
@@ -59,6 +68,7 @@ public class ActionMenuController : MonoBehaviour
         moveButton = root.Q<Button>("MoveButton");
         attackButton = root.Q<Button>("ATTButton");
         cancelButton = root.Q<Button>("CancelButton");
+        endButton = root.Q<Button>("EndButton");
         
         if (panel == null)
         {
@@ -84,10 +94,17 @@ public class ActionMenuController : MonoBehaviour
             return;
         }
         
+        if (endButton == null)
+        {
+            Debug.LogError("EndButton not found!");
+            return;
+        }
+        
         // Set up button callbacks
         moveButton.clicked += OnMoveButtonPressed;
         attackButton.clicked += OnAttackButtonPressed;
         cancelButton.clicked += OnCancelButtonPressed;
+        endButton.clicked += OnEndTurnButtonPressed;
         
         // Hide menu initially
         HideActionMenu();
@@ -98,7 +115,8 @@ public class ActionMenuController : MonoBehaviour
     void Update()
     {
         // Check for unit selection when not in placement mode and not in movement mode
-        if (modeManager != null && !modeManager.IsInPlacementMode())
+        if (modeManager != null && !modeManager.IsInPlacementMode() && 
+            (turnManager == null || turnManager.GetCurrentPhase() != BattlePhase.Placement))
         {
             // Don't handle unit selection if movement manager is in movement mode or attack manager is active
             if (movementManager != null && (movementManager.IsMoving() || movementManager.IsInMovementMode()))
@@ -159,8 +177,11 @@ public class ActionMenuController : MonoBehaviour
                 
                 if (clickedObject.CompareTag("Player"))
                 {
-                    // Select player unit and show action menu
-                    SelectUnit(clickedObject);
+                    // Only allow selecting player units during their turn in combat phase
+                    if (CanSelectUnit(clickedObject))
+                    {
+                        SelectUnit(clickedObject);
+                    }
                 }
                 else
                 {
@@ -211,7 +232,12 @@ public class ActionMenuController : MonoBehaviour
         if (selectedUnit == unit && isMenuVisible) return; // Already selected
         
         selectedUnit = unit;
-        ShowActionMenu();
+        
+        // Only show action menu during combat phase, not placement phase
+        if (turnManager == null || turnManager.GetCurrentPhase() != BattlePhase.Placement)
+        {
+            ShowActionMenu();
+        }
         
         // Notify movement manager about selection (but don't enter movement mode yet)
         if (movementManager != null)
@@ -265,6 +291,12 @@ public class ActionMenuController : MonoBehaviour
         
         moveButton.SetEnabled(!shouldDisable);
         attackButton.SetEnabled(!shouldDisable);
+        
+        // End Turn button should only be enabled during combat phase for player turns
+        bool enableEndTurn = !shouldDisable && turnManager != null && 
+                            turnManager.GetCurrentPhase() == BattlePhase.Combat && 
+                            turnManager.IsPlayerTurn();
+        endButton.SetEnabled(enableEndTurn);
         
         if (shouldDisable)
         {
@@ -334,6 +366,35 @@ public class ActionMenuController : MonoBehaviour
         }
     }
     
+    void OnEndTurnButtonPressed()
+    {
+        Debug.Log("End Turn button pressed");
+        
+        // End the current player's turn
+        if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat && turnManager.IsPlayerTurn())
+        {
+            // Show remaining resources before ending turn
+            if (selectedUnit != null)
+            {
+                Character character = selectedUnit.GetComponent<Character>();
+                if (character?.Stats != null)
+                {
+                    SimpleMessageLog.Log($"{character.CharacterName} ends turn (AP: {character.Stats.CurrentAP}, MP: {character.Stats.CurrentMP})");
+                }
+            }
+            
+            // Deselect unit and hide menu
+            DeselectUnit();
+            
+            // End the turn
+            turnManager.EndTurn();
+        }
+        else
+        {
+            Debug.LogWarning("Cannot end turn - not in combat phase or not player's turn");
+        }
+    }
+    
     // Public methods for external control
     public bool IsUnitSelected()
     {
@@ -358,5 +419,57 @@ public class ActionMenuController : MonoBehaviour
     public void OnSkillPerformed()
     {
         lastSkillTime = Time.time;
+    }
+    
+    bool CanSelectUnit(GameObject unit)
+    {
+        // During placement phase, allow unit selection for stats viewing but don't show action menu
+        if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Placement)
+        {
+            return unit.CompareTag("Player"); // Allow selecting placed player units for stats
+        }
+        
+        // If no turn manager or not in combat, allow selection (fallback for non-turn-based scenarios)
+        if (turnManager == null)
+        {
+            return true;
+        }
+        
+        // During combat phase, only allow selecting the current turn's unit
+        if (turnManager.GetCurrentPhase() == BattlePhase.Combat)
+        {
+            return turnManager.IsPlayerTurn() && turnManager.GetCurrentUnit() == unit;
+        }
+        
+        return false;
+    }
+    
+    // Method to end the current player's turn after completing an action
+    void EndPlayerTurnAfterAction()
+    {
+        if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat && turnManager.IsPlayerTurn())
+        {
+            Debug.Log("Player completed action - ending turn");
+            turnManager.EndTurn();
+        }
+    }
+    
+    void OnBattlePhaseChanged(BattlePhase newPhase)
+    {
+        // Hide action menu during placement phase
+        if (newPhase == BattlePhase.Placement)
+        {
+            HideActionMenu();
+            DeselectUnit();
+        }
+    }
+    
+    void OnDestroy()
+    {
+        // Unsubscribe from events
+        if (turnManager != null)
+        {
+            turnManager.OnPhaseChange -= OnBattlePhaseChanged;
+        }
     }
 }

@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: caa687d5d4b2781469b8aba97346e692, type: 3}
   m_Name: LookAhead
   m_EditorClassIdentifier: Assembly-CSharp::SkillSO
-  skillName: Long Ranged Bow Attack
+  skillName: Look Ahead
   description: Take aim and shoot further than before
   skillIcon: {fileID: 0}
   skillType: 0
   targetType: 2
-  manaCost: 5
+  apCost: 1
   cooldown: 1
   range: 5
   baseDamage: 0

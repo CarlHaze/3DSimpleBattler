@@ -299,7 +299,17 @@ public class SkillManager : MonoBehaviour
                 break;
         }
         
+        // Exit skill mode immediately
         ExitSkillMode();
+        
+        // Keep unit selected and show action menu after skill use for player units
+        TurnManager turnManager = FindFirstObjectByType<TurnManager>();
+        if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat && 
+            turnManager.IsPlayerTurn() && skillUser == turnManager.GetCurrentUnit())
+        {
+            // Re-select the skill user to show the action menu after a small delay
+            Invoke(nameof(ReselectUnitAfterSkill), 0.1f);
+        }
     }
     
     void ExecuteSkillAt(Vector2Int gridPosition, GameObject targetObject)
@@ -330,12 +340,36 @@ public class SkillManager : MonoBehaviour
                 break;
         }
         
+        // Exit skill mode immediately
         ExitSkillMode();
+        
+        // Keep unit selected and show action menu after skill use for player units
+        TurnManager turnManager = FindFirstObjectByType<TurnManager>();
+        if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat && 
+            turnManager.IsPlayerTurn() && skillUser == turnManager.GetCurrentUnit())
+        {
+            // Re-select the skill user to show the action menu after a small delay
+            Invoke(nameof(ReselectUnitAfterSkill), 0.1f);
+        }
     }
     
     void ExecuteChargeSkill(GameObject target)
     {
         Debug.Log("ExecuteChargeSkill: Starting charge execution");
+        
+        // Check AP cost and spend it
+        Character userCharacter = skillUser.GetComponent<Character>();
+        if (userCharacter?.Stats != null)
+        {
+            if (!userCharacter.Stats.CanSpendAP(currentSkill.apCost))
+            {
+                SimpleMessageLog.Log($"{userCharacter.CharacterName} doesn't have enough AP to use {currentSkill.skillName}!");
+                return;
+            }
+            
+            userCharacter.Stats.SpendAP(currentSkill.apCost);
+            Debug.Log($"{userCharacter.CharacterName} spent {currentSkill.apCost} AP for charge - remaining: {userCharacter.Stats.CurrentAP}");
+        }
         
         // Get positions
         UnitGridInfo userInfo = skillUser.GetComponent<UnitGridInfo>();
@@ -421,9 +455,8 @@ public class SkillManager : MonoBehaviour
         Debug.Log("ExecuteChargeSkill: Starting delayed attack coroutine");
         StartCoroutine(DelayedChargeAttack(skillUser, target, currentSkill, 0.1f));
         
-        Character userCharacter = skillUser.GetComponent<Character>();
-        Character targetCharacter = target.GetComponent<Character>();
         string userNameString = userCharacter != null ? userCharacter.CharacterName : skillUser.name;
+        Character targetCharacter = target.GetComponent<Character>();
         string targetNameString = targetCharacter != null ? targetCharacter.CharacterName : target.name;
         
         SimpleMessageLog.Log($"{userNameString} charges at {targetNameString}!");
@@ -546,6 +579,17 @@ public class SkillManager : MonoBehaviour
         
         if (attackerCharacter == null || targetCharacter == null) return;
         
+        // Check if user has enough AP (should already be checked but double-check for safety)
+        if (!attackerCharacter.Stats.CanSpendAP(currentSkill.apCost))
+        {
+            SimpleMessageLog.Log($"{attackerCharacter.CharacterName} doesn't have enough AP to use {currentSkill.skillName}!");
+            return;
+        }
+        
+        // Spend AP
+        attackerCharacter.Stats.SpendAP(currentSkill.apCost);
+        Debug.Log($"{attackerCharacter.CharacterName} spent {currentSkill.apCost} AP - remaining: {attackerCharacter.Stats.CurrentAP}");
+        
         // Calculate skill damage
         int skillDamage = Mathf.RoundToInt(currentSkill.baseDamage + (attackerCharacter.Stats.Attack * currentSkill.damageMultiplier));
         
@@ -624,6 +668,16 @@ public class SkillManager : MonoBehaviour
     {
         // For now, skills are instant. In the future, you might have skill animations
         return false;
+    }
+    
+    void ReselectUnitAfterSkill()
+    {
+        // Re-select the skill user to show the action menu
+        ActionMenuController actionMenu = FindFirstObjectByType<ActionMenuController>();
+        if (actionMenu != null && skillUser != null)
+        {
+            actionMenu.SelectUnit(skillUser);
+        }
     }
     
     public GameObject GetSkillUser()

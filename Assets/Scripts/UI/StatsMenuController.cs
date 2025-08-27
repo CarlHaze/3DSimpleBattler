@@ -5,6 +5,8 @@ public class StatsMenuController : MonoBehaviour
 {
     private UIDocument uiDocument;
     private UnitMovementManager movementManager;
+    private ActionMenuController actionMenuController;
+    private TurnManager turnManager;
     
     // References to the labels and panel
     private VisualElement panel;
@@ -13,6 +15,8 @@ public class StatsMenuController : MonoBehaviour
     private Label attackLabel;
     private Label defenseLabel;
     private Label speedLabel;
+    private Label apLabel;
+    private Label mpLabel;
     
     // Enemy selection tracking
     private GameObject lastSelectedEnemyUnit;
@@ -43,9 +47,13 @@ public class StatsMenuController : MonoBehaviour
         attackLabel = root.Q<Label>("ATTLabel");
         defenseLabel = root.Q<Label>("DEFLabel");
         speedLabel = root.Q<Label>("SPDLabel");
+        apLabel = root.Q<Label>("APLabel");
+        mpLabel = root.Q<Label>("MPLabel");
         
         // Find the movement manager to get selected units
         movementManager = FindFirstObjectByType<UnitMovementManager>();
+        actionMenuController = FindFirstObjectByType<ActionMenuController>();
+        turnManager = FindFirstObjectByType<TurnManager>();
         
         // Hide the panel initially by adding the hide class
         if (panel != null)
@@ -60,38 +68,59 @@ public class StatsMenuController : MonoBehaviour
     
     void Update()
     {
-        // Check if we have a selected unit
-        if (movementManager != null)
+        // Get selected unit from appropriate source based on current phase
+        GameObject selectedUnit = GetCurrentlySelectedUnit();
+        
+        if (selectedUnit != null)
         {
-            GameObject selectedUnit = movementManager.GetSelectedUnit();
-            
-            if (selectedUnit != null)
+            // Clear enemy selection when player unit is selected
+            if (lastSelectedEnemyUnit != null)
             {
-                // Clear enemy selection when player unit is selected
-                if (lastSelectedEnemyUnit != null)
-                {
-                    lastSelectedEnemyUnit = null;
-                }
-                
-                Character character = selectedUnit.GetComponent<Character>();
-                if (character != null)
-                {
-                    ShowPanel();
-                    UpdateStats(character.Stats, character.CharacterName);
-                }
+                lastSelectedEnemyUnit = null;
             }
-            else
+            
+            Character character = selectedUnit.GetComponent<Character>();
+            if (character != null)
             {
-                // Check for enemy clicks when no player unit is selected
-                CheckForEnemySelection();
-                
-                // Only hide panel if no enemy is selected either
-                if (lastSelectedEnemyUnit == null)
+                ShowPanel();
+                UpdateStats(character.Stats, character.CharacterName);
+            }
+        }
+        else
+        {
+            // Check for enemy clicks when no player unit is selected
+            CheckForEnemySelection();
+            
+            // Only hide panel if no enemy is selected either
+            if (lastSelectedEnemyUnit == null)
+            {
+                HidePanel();
+            }
+        }
+    }
+    
+    GameObject GetCurrentlySelectedUnit()
+    {
+        // During placement phase or if no turn manager, check ActionMenuController
+        if (turnManager == null || turnManager.GetCurrentPhase() == BattlePhase.Placement)
+        {
+            if (actionMenuController != null)
+            {
+                GameObject actionSelectedUnit = actionMenuController.GetSelectedUnit();
+                if (actionSelectedUnit != null)
                 {
-                    HidePanel();
+                    return actionSelectedUnit;
                 }
             }
         }
+        
+        // During combat phase or fallback, check UnitMovementManager
+        if (movementManager != null)
+        {
+            return movementManager.GetSelectedUnit();
+        }
+        
+        return null;
     }
     
     public void UpdateStats(CharacterStats stats, string unitName = "Unit")
@@ -104,6 +133,8 @@ public class StatsMenuController : MonoBehaviour
         if (attackLabel != null) attackLabel.text = $"Attack: {stats.Attack}";
         if (defenseLabel != null) defenseLabel.text = $"Defense: {stats.Defense}";
         if (speedLabel != null) speedLabel.text = $"Speed: {stats.Speed}";
+        if (apLabel != null) apLabel.text = $"AP: {stats.CurrentAP}/{stats.MaxAP}";
+        if (mpLabel != null) mpLabel.text = $"MP: {stats.CurrentMP}/{stats.MaxMP}";
     }
     
     void ClearStats()
@@ -113,6 +144,8 @@ public class StatsMenuController : MonoBehaviour
         if (attackLabel != null) attackLabel.text = "Attack: 0";
         if (defenseLabel != null) defenseLabel.text = "Defense: 0";
         if (speedLabel != null) speedLabel.text = "Speed: 0";
+        if (apLabel != null) apLabel.text = "AP: 0/0";
+        if (mpLabel != null) mpLabel.text = "MP: 0/0";
     }
     
     void ShowPanel()

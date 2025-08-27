@@ -1,12 +1,14 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Assets/UI/stats_menu.uss?fileID=7433441132597879392&amp;guid=ccbe9f6ba4614634e850e796edddd336&amp;type=3#stats_menu" />
+    <Style src="project://database/Assets/UI/StatsMenu/stats_menu.uss?fileID=7433441132597879392&amp;guid=ccbe9f6ba4614634e850e796edddd336&amp;type=3#stats_menu" />
     <ui:VisualElement name="Panel" class="panel" style="flex-grow: 1; background-color: rgba(49, 0, 77, 0);">
-        <ui:VisualElement name="Container" class="menu" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); width: 400px; height: 10px; min-height: 50px; max-height: 200px; position: relative; top: 94px; left: 5px; right: auto; bottom: auto; transform-origin: center; translate: -100px 360px; background-image: url(&quot;project://database/Assets/UI/Materials/el_03_02.png?fileID=2800000&amp;guid=88cb925a4b5c9b74e8c12a1ad3828c53&amp;type=3#el_03_02&quot;); justify-content: center; -unity-background-scale-mode: scale-to-fit;">
+        <ui:VisualElement name="Container" class="menu" style="flex-grow: 1; background-color: rgb(36, 36, 36); width: 244px; height: 250px; min-height: 50px; max-height: 247px; position: relative; top: 94px; left: 5px; right: auto; bottom: auto; transform-origin: center; translate: 1px 375px; background-image: none; justify-content: center; -unity-background-scale-mode: scale-to-fit; border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-right-radius: 15px; border-bottom-left-radius: 15px; border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgb(195, 195, 195); border-right-color: rgb(195, 195, 195); border-top-color: rgb(195, 195, 195); border-bottom-color: rgb(195, 195, 195);">
             <ui:Label text="Label" name="NameLabel" class="stats_label" />
             <ui:Label text="Label" name="HPLabel" class="stats_label" />
             <ui:Label text="Label" name="ATTLabel" class="stats_label" />
             <ui:Label text="Label" name="DEFLabel" class="stats_label" />
             <ui:Label text="Label" name="SPDLabel" class="stats_label" />
+            <ui:Label text="Label" name="APLabel" class="stats_label" />
+            <ui:Label text="Label" name="MPLabel" class="stats_label" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

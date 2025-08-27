@@ -11,12 +11,20 @@ public class CharacterStats
     [SerializeField] private int baseSpeed = 5;
     [SerializeField] private int baseAttackRange = 1;
     
+    [Header("Action & Move Points")]
+    [SerializeField] private int baseMaxAP = 2; // Action Points per turn (for skills/attacks)
+    [SerializeField] private int currentAP;
+    [SerializeField] private int baseMaxMP = 3; // Move Points per turn (for movement)
+    [SerializeField] private int currentMP;
+    
     // Class bonuses (applied from character class SO)
     private int classHPBonus = 0;
     private int classAttackBonus = 0;
     private int classDefenseBonus = 0;
     private int classSpeedBonus = 0;
     private int classAttackRangeBonus = 0;
+    private int classAPBonus = 0;
+    private int classMPBonus = 0;
     
     // Reference to the owning character for class logic callbacks
     private Character owningCharacter;
@@ -27,6 +35,12 @@ public class CharacterStats
     public int Defense => baseDefense + classDefenseBonus;
     public int Speed => baseSpeed + classSpeedBonus;
     public int AttackRange => baseAttackRange + classAttackRangeBonus;
+    
+    // Action Points and Move Points
+    public int MaxAP => baseMaxAP + classAPBonus;
+    public int CurrentAP => currentAP;
+    public int MaxMP => baseMaxMP + classMPBonus;
+    public int CurrentMP => currentMP;
     
     // Base stats getters (without class bonuses)
     public int BaseMaxHP => baseMaxHP;
@@ -52,6 +66,10 @@ public class CharacterStats
         {
             currentHP = MaxHP;
         }
+        
+        // Initialize AP and MP to max values
+        RefreshActionPoints();
+        RefreshMovePoints();
     }
     
     // Initialize from CharacterClassSO
@@ -71,6 +89,10 @@ public class CharacterStats
         
         // Always reset HP to match new MaxHP (important for designer workflow)
         currentHP = MaxHP;
+        
+        // Initialize AP and MP to max values
+        RefreshActionPoints();
+        RefreshMovePoints();
     }
     
     public void ApplyClassBonuses(CharacterClassSO classSO)
@@ -153,5 +175,63 @@ public class CharacterStats
         {
             owningCharacter.CharacterClass.ClassLogic.OnHealthChanged(owningCharacter, oldHP, currentHP);
         }
+    }
+    
+    // Action Points Management
+    public void RefreshActionPoints()
+    {
+        currentAP = MaxAP;
+    }
+    
+    public bool CanSpendAP(int cost)
+    {
+        return currentAP >= cost;
+    }
+    
+    public bool SpendAP(int cost)
+    {
+        if (!CanSpendAP(cost)) return false;
+        currentAP = Mathf.Max(0, currentAP - cost);
+        return true;
+    }
+    
+    public void RestoreAP(int amount)
+    {
+        currentAP = Mathf.Clamp(currentAP + amount, 0, MaxAP);
+    }
+    
+    // Move Points Management
+    public void RefreshMovePoints()
+    {
+        currentMP = MaxMP;
+    }
+    
+    public bool CanSpendMP(int cost)
+    {
+        return currentMP >= cost;
+    }
+    
+    public bool SpendMP(int cost)
+    {
+        if (!CanSpendMP(cost)) return false;
+        currentMP = Mathf.Max(0, currentMP - cost);
+        return true;
+    }
+    
+    public void RestoreMP(int amount)
+    {
+        currentMP = Mathf.Clamp(currentMP + amount, 0, MaxMP);
+    }
+    
+    // Utility methods for turn management
+    public void RefreshTurnResources()
+    {
+        RefreshActionPoints();
+        RefreshMovePoints();
+    }
+    
+    public bool HasActionsRemaining()
+    {
+        return currentAP > 0 || currentMP > 0;
     }
 }

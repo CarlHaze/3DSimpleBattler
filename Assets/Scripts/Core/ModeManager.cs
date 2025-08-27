@@ -16,10 +16,12 @@ public class ModeManager : MonoBehaviour
     public KeyCode placementToggleKey = KeyCode.P;
     
     [Header("Battle Conditions")]
+    public bool isBattleMap = false; // Set this to true for battle maps in the inspector
     public bool inBattle = false;
     
     private UnitPlacementManager placementManager;
     private PlacementUIController placementUI;
+    private TurnManager turnManager;
     
     void Awake()
     {
@@ -38,9 +40,19 @@ public class ModeManager : MonoBehaviour
     {
         placementManager = FindFirstObjectByType<UnitPlacementManager>();
         placementUI = FindFirstObjectByType<PlacementUIController>();
+        turnManager = FindFirstObjectByType<TurnManager>();
         
-        // Set initial mode
-        SetMode(inBattle ? GameMode.Battle : GameMode.Explore);
+        // Set initial mode based on isBattleMap setting
+        if (isBattleMap)
+        {
+            SetMode(GameMode.Placement); // Start in placement mode for battle maps
+            Debug.Log("Battle map - starting in Placement mode");
+        }
+        else
+        {
+            SetMode(GameMode.Explore);
+            Debug.Log("Non-battle map - starting in Explore mode");
+        }
     }
     
     void Update()
@@ -51,20 +63,35 @@ public class ModeManager : MonoBehaviour
             TogglePlacementMode();
         }
         
-        // Auto-switch to battle mode if inBattle condition is true
-        if (inBattle && currentMode != GameMode.Battle)
+        // Only allow auto-switching for non-battle maps
+        // Battle maps are controlled by the TurnManager
+        if (!isBattleMap)
         {
-            SetMode(GameMode.Battle);
-        }
-        else if (!inBattle && currentMode == GameMode.Battle)
-        {
-            SetMode(GameMode.Explore);
+            // Auto-switch to battle mode if inBattle condition is true
+            if (inBattle && currentMode != GameMode.Battle)
+            {
+                SetMode(GameMode.Battle);
+            }
+            else if (!inBattle && currentMode == GameMode.Battle)
+            {
+                SetMode(GameMode.Explore);
+            }
         }
     }
     
     public void TogglePlacementMode()
     {
-        if (inBattle)
+        // For battle maps, allow toggling between placement and explore during placement phase
+        if (isBattleMap)
+        {
+            // Check if we're in active combat phase
+            if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat)
+            {
+                Debug.Log("Cannot enter placement mode during active combat");
+                return;
+            }
+        }
+        else if (inBattle)
         {
             Debug.Log("Cannot enter placement mode during battle");
             return;
@@ -183,4 +210,5 @@ public class ModeManager : MonoBehaviour
             SetMode(GameMode.Explore);
         }
     }
+    
 }

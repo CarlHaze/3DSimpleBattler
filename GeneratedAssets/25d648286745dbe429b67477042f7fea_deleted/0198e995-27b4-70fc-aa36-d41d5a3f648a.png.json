@@ -1,0 +1,20 @@
+{
+    "asset": "25d648286745dbe429b67477042f7fea",
+    "fileName": "0198e995-27b4-70fc-aa36-d41d5a3f648a.png",
+    "prompt": "Sprite sheet of fantasty RPG attacks",
+    "negativePrompt": "Blurry, detailed",
+    "model": "c6c216a2-8b48-4f69-9db1-26a288c92184",
+    "modelName": "Simple Vector",
+    "customSeed": -1,
+    "w3CTraceId": "b5a5a1447393ef897b26f0cd6bf904a8",
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0
+}

@@ -403,6 +403,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1763732399}
+  - {fileID: 1958750663}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &76961341
@@ -2139,7 +2140,7 @@ GameObject:
   - component: {fileID: 1763732399}
   - component: {fileID: 1763732400}
   m_Layer: 0
-  m_Name: Skillmanager
+  m_Name: SkillManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2174,7 +2175,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillManager
   skillRangeColor: {r: 0, g: 0, b: 1, a: 1}
   skillTargetableRangeColor: {r: 0, g: 1, b: 1, a: 1}
-  skillRangeOverlayMaterial: {fileID: 0}
+  skillRangeOverlayMaterial: {fileID: 2100000, guid: 694531e34cd838246a0bc78a119420cc, type: 2}
 --- !u!1 &1778389199
 GameObject:
   m_ObjectHideFlags: 0
@@ -2309,6 +2310,52 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
+--- !u!1 &1958750662
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1958750663}
+  - component: {fileID: 1958750664}
+  m_Layer: 0
+  m_Name: TurnManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1958750663
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958750662}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 50867805}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1958750664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1958750662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4f17e20d46022d46bed7fb476c341df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TurnManager
+  playerSpeedBias: 0.1
+  currentPhase: 0
 --- !u!1 &1979144676
 GameObject:
   m_ObjectHideFlags: 0
@@ -2340,6 +2387,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ModeManager
   currentMode: 0
   placementToggleKey: 112
+  isBattleMap: 1
   inBattle: 0
 --- !u!4 &1979144678
 Transform:
