@@ -1,0 +1,22 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/SkillMenu/skill_menu.uss?fileID=7433441132597879392&amp;guid=YOUR_GUID_HERE&amp;type=3#skill_menu" />
+    
+    <ui:VisualElement name="SkillPanel" class="hide">
+        <ui:VisualElement name="SkillContainer" class="skill-container">
+            <!-- Header -->
+            <ui:Label text="Skills" name="SkillHeader" class="skill-header" />
+            
+            <!-- ListView for skills - simplified attributes -->
+            <ui:ListView name="SkillListView" class="skill-list" />
+            
+            <!-- Description Panel -->
+            <ui:VisualElement name="DescriptionPanel" class="description-panel">
+                <ui:Label name="SkillDescription" text="Select a skill to see its description" class="skill-description" />
+                <ui:Label name="SkillCost" text="" class="skill-cost" />
+            </ui:VisualElement>
+            
+            <!-- Back Button -->
+            <ui:Button text="Back" name="BackButton" class="button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

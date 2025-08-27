@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/ActionMenu/action_menu.uss?fileID=7433441132597879392&amp;guid=8f1ec4737e92543498f6edf49df3c259&amp;type=3#action_menu" />
+    <ui:VisualElement name="SkillPanel" style="flex-grow: 1;">
+        <ui:VisualElement name="SkillContainer" style="flex-grow: 1;">
+            <ui:Label text="Label" name="SkillHeader" class="text" />
+            <ui:ListView name="SkillListView"
+                         class="skill-list"
+                         show-border="false"
+                         selection-type="Single"
+                         
+                        
+                          />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

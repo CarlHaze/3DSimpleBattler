@@ -16,6 +16,7 @@ public class SkillManager : MonoBehaviour
     
     // Current skill state
     private GameObject skillUser;
+    private GameObject skillUserToReselect; // Store user for reselection after skill
     private SkillSO currentSkill;
     private List<GameObject> skillRangeOverlays = new List<GameObject>();
     private List<GameObject> validTargets = new List<GameObject>();
@@ -93,6 +94,9 @@ public class SkillManager : MonoBehaviour
     
     public void ExitSkillMode()
     {
+        // Store skill user before clearing for potential re-selection
+        GameObject unitToReselect = skillUser;
+        
         inSkillMode = false;
         ClearSkillRangeOverlays();
         validTargets.Clear();
@@ -100,6 +104,18 @@ public class SkillManager : MonoBehaviour
         currentSkill = null;
         currentGroundObject = null;
         SimpleMessageLog.Log("Exited skill mode");
+        
+        // Re-show action menu if we exited during combat for a player unit
+        TurnManager turnManager = FindFirstObjectByType<TurnManager>();
+        ActionMenuController actionMenu = FindFirstObjectByType<ActionMenuController>();
+        
+        if (turnManager != null && actionMenu != null && unitToReselect != null &&
+            turnManager.GetCurrentPhase() == BattlePhase.Combat && 
+            turnManager.IsPlayerTurn() && unitToReselect == turnManager.GetCurrentUnit())
+        {
+            Debug.Log($"Re-selecting unit {unitToReselect.name} after exiting skill mode");
+            actionMenu.SelectUnit(unitToReselect);
+        }
     }
     
     void ShowSkillRange(Vector2Int unitPosition, GameObject groundObject, SkillSO skill)
@@ -281,6 +297,9 @@ public class SkillManager : MonoBehaviour
         
         Debug.Log($"Executing {currentSkill.skillName} on {target.name}");
         
+        // Store the skill user before clearing it
+        GameObject unitToReselect = skillUser;
+        
         // Notify ActionMenuController that a skill was performed to prevent auto-selection
         ActionMenuController actionMenu = FindFirstObjectByType<ActionMenuController>();
         if (actionMenu != null)
@@ -299,17 +318,18 @@ public class SkillManager : MonoBehaviour
                 break;
         }
         
-        // Exit skill mode immediately
-        ExitSkillMode();
-        
         // Keep unit selected and show action menu after skill use for player units
         TurnManager turnManager = FindFirstObjectByType<TurnManager>();
         if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat && 
-            turnManager.IsPlayerTurn() && skillUser == turnManager.GetCurrentUnit())
+            turnManager.IsPlayerTurn() && unitToReselect == turnManager.GetCurrentUnit())
         {
-            // Re-select the skill user to show the action menu after a small delay
+            // Store unit for re-selection and invoke after delay
+            skillUserToReselect = unitToReselect;
             Invoke(nameof(ReselectUnitAfterSkill), 0.1f);
         }
+        
+        // Exit skill mode after checking for reselection
+        ExitSkillMode();
     }
     
     void ExecuteSkillAt(Vector2Int gridPosition, GameObject targetObject)
@@ -317,6 +337,9 @@ public class SkillManager : MonoBehaviour
         if (currentSkill == null || skillUser == null) return;
         
         Debug.Log($"Executing {currentSkill.skillName} at grid position {gridPosition}");
+        
+        // Store the skill user before clearing it
+        GameObject unitToReselect = skillUser;
         
         // Notify ActionMenuController that a skill was performed to prevent auto-selection
         ActionMenuController actionMenu = FindFirstObjectByType<ActionMenuController>();
@@ -340,17 +363,18 @@ public class SkillManager : MonoBehaviour
                 break;
         }
         
-        // Exit skill mode immediately
-        ExitSkillMode();
-        
         // Keep unit selected and show action menu after skill use for player units
         TurnManager turnManager = FindFirstObjectByType<TurnManager>();
         if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat && 
-            turnManager.IsPlayerTurn() && skillUser == turnManager.GetCurrentUnit())
+            turnManager.IsPlayerTurn() && unitToReselect == turnManager.GetCurrentUnit())
         {
-            // Re-select the skill user to show the action menu after a small delay
+            // Store unit for re-selection and invoke after delay
+            skillUserToReselect = unitToReselect;
             Invoke(nameof(ReselectUnitAfterSkill), 0.1f);
         }
+        
+        // Exit skill mode after checking for reselection
+        ExitSkillMode();
     }
     
     void ExecuteChargeSkill(GameObject target)
@@ -674,9 +698,11 @@ public class SkillManager : MonoBehaviour
     {
         // Re-select the skill user to show the action menu
         ActionMenuController actionMenu = FindFirstObjectByType<ActionMenuController>();
-        if (actionMenu != null && skillUser != null)
+        if (actionMenu != null && skillUserToReselect != null)
         {
-            actionMenu.SelectUnit(skillUser);
+            Debug.Log($"Reselecting unit {skillUserToReselect.name} after skill");
+            actionMenu.SelectUnit(skillUserToReselect);
+            skillUserToReselect = null; // Clear after use
         }
     }
     

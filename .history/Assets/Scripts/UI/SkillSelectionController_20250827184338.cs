@@ -61,17 +61,17 @@ public class SkillSelectionController : MonoBehaviour
                 if (index < availableSkills.Count)
                 {
                     SkillSO skill = availableSkills[index];
-                    if (skill != null)
+                    if (skill == null)
+                    {
+                        label.text = "Basic Attack";
+                    }
+                    else
                     {
                         label.text = skill.skillName;
                         if (skill.apCost > 0)
                         {
                             label.text += $" (AP: {skill.apCost})";
                         }
-                    }
-                    else
-                    {
-                        label.text = "Unknown Skill";
                     }
                 }
             };
@@ -111,7 +111,7 @@ public class SkillSelectionController : MonoBehaviour
         {
             Debug.Log($"Character class {character.CharacterClass.className} has {character.CharacterClass.startingSkills.Count} starting skills");
         }
-
+        
         if (knownSkills != null && knownSkills.Count > 0)
         {
             foreach (SkillSO skill in knownSkills)
@@ -133,9 +133,10 @@ public class SkillSelectionController : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"Character {character.CharacterName} has no known skills! Check if skills are assigned in the Character component or CharacterClass ScriptableObject.");
-        }
+            Debug.LogWarning($"Character {character.CharacterName} has no known skills! Check if skills are assigned in the Character component or CharacterClass ScriptableObject.");\n        }
         
+        // Add basic attack as default option
+        availableSkills.Insert(0, null); // null represents basic attack
         Debug.Log($"Total available skills: {availableSkills.Count}");
         
         // Update ListView itemsSource
@@ -247,7 +248,19 @@ public class SkillSelectionController : MonoBehaviour
         Character character = selectedUnit.GetComponent<Character>();
         if (character == null) return;
         
-        if (skill != null)
+        if (skill == null)
+        {
+            // Basic attack
+            if (skillDescription != null)
+            {
+                skillDescription.text = "Basic Attack: A standard attack dealing base damage.";
+            }
+            if (skillCost != null)
+            {
+                skillCost.text = "AP Cost: 1";
+            }
+        }
+        else
         {
             // Show skill description
             if (skillDescription != null)
@@ -257,18 +270,6 @@ public class SkillSelectionController : MonoBehaviour
             if (skillCost != null)
             {
                 skillCost.text = $"AP Cost: {skill.apCost}";
-            }
-        }
-        else
-        {
-            // Clear description if no skill selected
-            if (skillDescription != null)
-            {
-                skillDescription.text = "Select a skill to see its description";
-            }
-            if (skillCost != null)
-            {
-                skillCost.text = "";
             }
         }
     }
@@ -345,16 +346,12 @@ public class SkillSelectionController : MonoBehaviour
     
     private void OnBackButtonClicked()
     {
-        // Store unit before hiding menu (since HideSkillMenu clears selectedUnit)
-        GameObject unitToReselect = selectedUnit;
-        
         HideSkillMenu();
         
         // Re-show action menu if needed
-        if (actionMenuController != null && unitToReselect != null)
+        if (actionMenuController != null && selectedUnit != null)
         {
-            Debug.Log($"Back button clicked - reselecting unit {unitToReselect.name}");
-            actionMenuController.SelectUnit(unitToReselect);
+            actionMenuController.SelectUnit(selectedUnit);
         }
     }
     

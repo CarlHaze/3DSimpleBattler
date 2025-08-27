@@ -36,5 +36,4 @@
 .btnhover:hover {
 
     font-size: 19px;
-    color: #00CDFF;
 }

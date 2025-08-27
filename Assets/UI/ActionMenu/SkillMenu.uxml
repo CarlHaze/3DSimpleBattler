@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/ActionMenu/action_menu.uss?fileID=7433441132597879392&amp;guid=8f1ec4737e92543498f6edf49df3c259&amp;type=3#action_menu" />
+    <ui:VisualElement name="SkillPanel" style="flex-grow: 1; align-items: stretch; justify-content: center; align-self: center; align-content: center; width: 350px; height: 300px; max-height: 250px; max-width: 350px; border-top-left-radius: 15px; border-top-right-radius: 15px; border-bottom-right-radius: 15px; border-bottom-left-radius: 15px; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; background-color: rgb(36, 36, 36); translate: -663px 784px; border-left-color: rgb(195, 195, 195); border-right-color: rgb(195, 195, 195); border-top-color: rgb(195, 195, 195); border-bottom-color: rgb(195, 195, 195);">
+        <ui:VisualElement name="SkillContainer" style="flex-grow: 1; color: rgb(36, 36, 36); border-bottom-width: 2px; border-top-width: 2px; border-left-width: 2px; border-right-width: 2px; border-left-color: rgba(0, 0, 0, 0); border-right-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0);">
+            <ui:Label text="Skills" name="SkillHeader" class="text" style="-unity-text-align: upper-center;" />
+            <ui:ListView name="SkillListView" show-border="false" selection-type="Single" virtualization-method="DynamicHeight" fixed-item-height="30" class="skill-list text" />
+            <ui:VisualElement name="DescriptionPanel" style="flex-grow: 1; align-self: auto; align-content: auto;">
+                <ui:Label text="Select a skill to see its description" name="SkillDescription" class="text" style="white-space: normal; -unity-text-align: upper-left;" />
+                <ui:Label name="SkillCost" class="text" style="-unity-text-align: upper-center;" />
+                <ui:Button text="Back" name="BackButton" class="text btnhover" style="background-color: rgba(188, 188, 188, 0); align-content: auto; border-left-color: rgba(195, 195, 195, 0); border-right-color: rgba(195, 195, 195, 0); border-top-color: rgba(195, 195, 195, 0); border-bottom-color: rgba(195, 195, 195, 0); border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; translate: 0 0; font-size: 16px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -229,7 +229,12 @@ public class ActionMenuController : MonoBehaviour
     
     public void SelectUnit(GameObject unit)
     {
-        if (selectedUnit == unit && isMenuVisible) return; // Already selected
+        if (selectedUnit == unit && isMenuVisible) 
+        {
+            // Even if already selected, update button states in case resources changed
+            UpdateMoveButtonState();
+            return;
+        }
         
         selectedUnit = unit;
         
@@ -289,8 +294,25 @@ public class ActionMenuController : MonoBehaviour
             shouldDisable = true;
         }
         
-        moveButton.SetEnabled(!shouldDisable);
-        attackButton.SetEnabled(!shouldDisable);
+        // Check resource availability for selected unit
+        bool canMove = !shouldDisable;
+        bool canAttack = !shouldDisable;
+        
+        if (selectedUnit != null && !shouldDisable)
+        {
+            Character character = selectedUnit.GetComponent<Character>();
+            if (character?.Stats != null)
+            {
+                // Move requires at least 1 MP
+                canMove = character.Stats.CanSpendMP(1);
+                
+                // Attack requires at least 1 AP
+                canAttack = character.Stats.CanSpendAP(1);
+            }
+        }
+        
+        moveButton.SetEnabled(canMove);
+        attackButton.SetEnabled(canAttack);
         
         // End Turn button should only be enabled during combat phase for player turns
         bool enableEndTurn = !shouldDisable && turnManager != null && 
@@ -318,6 +340,17 @@ public class ActionMenuController : MonoBehaviour
     {
         if (selectedUnit == null) return;
         
+        // Check if unit has enough MP
+        Character character = selectedUnit.GetComponent<Character>();
+        if (character?.Stats != null)
+        {
+            if (!character.Stats.CanSpendMP(1))
+            {
+                SimpleMessageLog.Log($"No MP! {character.CharacterName} needs at least 1 Move Point to move.");
+                return;
+            }
+        }
+        
         Debug.Log("Move button pressed");
         
         // Enter movement mode for the selected unit
@@ -333,6 +366,17 @@ public class ActionMenuController : MonoBehaviour
     void OnAttackButtonPressed()
     {
         if (selectedUnit == null) return;
+        
+        // Check if unit has enough AP
+        Character character = selectedUnit.GetComponent<Character>();
+        if (character?.Stats != null)
+        {
+            if (!character.Stats.CanSpendAP(1))
+            {
+                SimpleMessageLog.Log($"No AP! {character.CharacterName} needs at least 1 Action Point to attack.");
+                return;
+            }
+        }
         
         Debug.Log("Attack button pressed");
         
