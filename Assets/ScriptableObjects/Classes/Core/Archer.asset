@@ -28,7 +28,9 @@ MonoBehaviour:
   classLogic: {fileID: 0}
   availableSkills:
   - {fileID: 11400000, guid: 85487621de83a264c96423278e08a128, type: 2}
+  - {fileID: 11400000, guid: 48c37a54d0aaa9c42a9ad3f983c6a48d, type: 2}
   startingSkills:
   - {fileID: 11400000, guid: 85487621de83a264c96423278e08a128, type: 2}
+  - {fileID: 11400000, guid: 48c37a54d0aaa9c42a9ad3f983c6a48d, type: 2}
   classColor: {r: 0, g: 0.745283, b: 0.0375605, a: 1}
   classPrefab: {fileID: 0}

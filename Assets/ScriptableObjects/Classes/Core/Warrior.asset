@@ -26,7 +26,10 @@ MonoBehaviour:
   speedBonus: -1
   attackRangeBonus: 0
   classLogic: {fileID: 0}
-  availableSkills: []
-  startingSkills: []
+  availableSkills:
+  - {fileID: 11400000, guid: 48c37a54d0aaa9c42a9ad3f983c6a48d, type: 2}
+  - {fileID: 11400000, guid: 5654ec615557cf041b6a488d9ddc398b, type: 2}
+  startingSkills:
+  - {fileID: 11400000, guid: 48c37a54d0aaa9c42a9ad3f983c6a48d, type: 2}
   classColor: {r: 0.9339623, g: 0.46918195, b: 0, a: 1}
   classPrefab: {fileID: 0}

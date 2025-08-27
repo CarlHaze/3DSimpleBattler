@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/ActionMenu/action_menu.uss?fileID=7433441132597879392&amp;guid=8f1ec4737e92543498f6edf49df3c259&amp;type=3#action_menu" />
+    <ui:VisualElement name="SkillPanel" style="flex-grow: 1;">
+        <ui:VisualElement name="SkillContainer" class="skill-container">
+            <ui:Label text="Skills" name="SkillHeader" class="skill-header" style="-unity-font-definition: url(&quot;project://database/Assets/UI/Fonts/Texturina-VariableFont_opsz,wght.ttf?fileID=12800000&amp;guid=5a0a396b52ce8a2458a3ab1cf1a9f9d9&amp;type=3#Texturina-VariableFont_opsz,wght&quot;); color: rgb(255, 255, 255);" />
+            <ui:ListView name="SkillListView"  
+                         class="skill-list"
+                         reorderable="false"
+                         show-border="false"
+                         selection-type="Single"
+                         fixed-item-height="30"
+                         virtualization-method="DynamicHeight"
+                          />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

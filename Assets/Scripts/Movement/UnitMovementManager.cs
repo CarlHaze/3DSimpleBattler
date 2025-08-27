@@ -147,10 +147,25 @@ public class UnitMovementManager : MonoBehaviour
     
     public void ExitMovementMode()
     {
+        // Store selected unit before clearing for potential re-selection
+        GameObject unitToReselect = selectedUnit;
+        
         inMovementMode = false;
         ClearMovementHighlights();
         validMovePositions.Clear();
         SimpleMessageLog.Log("Exited movement mode");
+        
+        // Re-show action menu if we exited during combat for a player unit
+        TurnManager turnManager = FindFirstObjectByType<TurnManager>();
+        ActionMenuController actionMenu = FindFirstObjectByType<ActionMenuController>();
+        
+        if (turnManager != null && actionMenu != null && unitToReselect != null &&
+            turnManager.GetCurrentPhase() == BattlePhase.Combat && 
+            turnManager.IsPlayerTurn() && unitToReselect == turnManager.GetCurrentUnit())
+        {
+            Debug.Log($"Re-selecting unit {unitToReselect.name} after exiting movement mode");
+            actionMenu.SelectUnit(unitToReselect);
+        }
     }
     
     void DeselectUnit()
