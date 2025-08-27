@@ -30,6 +30,12 @@ public class SkillSelectionController : MonoBehaviour
             return;
         }
         
+        // Add null check for safety during hot reload
+        if (this == null || gameObject == null)
+        {
+            return;
+        }
+        
         VisualElement root = uiDocument.rootVisualElement;
         skillPanel = root.Q<VisualElement>("SkillPanel");
         skillListView = root.Q<ListView>("SkillListView");
@@ -370,5 +376,23 @@ public class SkillSelectionController : MonoBehaviour
     public bool IsSkillMenuVisible()
     {
         return skillPanel != null && skillPanel.style.display == DisplayStyle.Flex && !skillPanel.ClassListContains("hide");
+    }
+    
+    void OnDestroy()
+    {
+        // Clean up any references to prevent issues during hot reload
+        if (backButton != null)
+        {
+            backButton.clicked -= OnBackButtonClicked;
+        }
+        
+        selectedUnit = null;
+        availableSkills?.Clear();
+        uiDocument = null;
+        skillPanel = null;
+        skillListView = null;
+        skillDescription = null;
+        skillCost = null;
+        backButton = null;
     }
 }

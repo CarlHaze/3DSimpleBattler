@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: caa687d5d4b2781469b8aba97346e692, type: 3}
-  m_Name: Basic Attack
+  m_Name: Basic Ranged Attack
   m_EditorClassIdentifier: Assembly-CSharp::SkillSO
   skillName: Basic Attack
-  description: A simple attack with a melee weapon
+  description: A simple attack with a ranged weapon
   skillIcon: {fileID: 0}
   skillType: 0
   targetType: 2
   apCost: 1
   cooldown: 0
-  range: 1
+  range: 3
   baseDamage: 10
   healing: 0
   damageMultiplier: 1
@@ -30,4 +30,4 @@ MonoBehaviour:
   minLevel: 1
   prerequisiteSkills: []
   requiredClasses:
-  - Warrior
+  - Archer
