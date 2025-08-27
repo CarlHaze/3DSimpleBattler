@@ -130,7 +130,22 @@ public class TurnManager : MonoBehaviour
         currentTurnIndex = turnIndex;
         currentUnit = turnOrder[currentTurnIndex];
         
+        // Check if the unit still exists (might have been destroyed)
+        if (currentUnit == null)
+        {
+            Debug.LogWarning($"Unit at turn index {turnIndex} has been destroyed, skipping turn");
+            NextTurn();
+            return;
+        }
+        
         Character character = currentUnit.GetComponent<Character>();
+        if (character == null)
+        {
+            Debug.LogWarning($"Unit {currentUnit.name} missing Character component, skipping turn");
+            NextTurn();
+            return;
+        }
+        
         Debug.Log($"Starting turn for: {character.CharacterName}");
         
         // Refresh AP and MP for the current unit's turn
@@ -331,14 +346,32 @@ public class TurnManager : MonoBehaviour
         // Refresh unit list in case units were defeated
         RefreshUnitList();
         
-        if (turnOrder.Count == 0)
+        if (allUnits.Count == 0)
         {
             Debug.LogWarning("No units left for combat!");
             return;
         }
         
-        // Move to next unit in turn order
-        currentTurnIndex = (currentTurnIndex + 1) % turnOrder.Count;
+        // Recalculate turn order with remaining units
+        CalculateTurnOrder();
+        
+        if (turnOrder.Count == 0)
+        {
+            Debug.LogWarning("No units left in turn order!");
+            return;
+        }
+        
+        // Reset turn index if it's out of bounds
+        if (currentTurnIndex >= turnOrder.Count)
+        {
+            currentTurnIndex = 0;
+        }
+        else
+        {
+            // Move to next unit in turn order
+            currentTurnIndex = (currentTurnIndex + 1) % turnOrder.Count;
+        }
+        
         StartTurn(currentTurnIndex);
     }
     

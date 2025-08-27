@@ -18,6 +18,7 @@ public class ModeManager : MonoBehaviour
     [Header("Battle Conditions")]
     public bool isBattleMap = false; // Set this to true for battle maps in the inspector
     public bool inBattle = false;
+    public int maxUnitsToPlace = 4; // Maximum units that can be placed on this map
     
     private UnitPlacementManager placementManager;
     private PlacementUIController placementUI;
@@ -209,6 +210,11 @@ public class ModeManager : MonoBehaviour
         {
             SetMode(GameMode.Explore);
         }
+    }
+    
+    public int GetMaxUnitsToPlace()
+    {
+        return maxUnitsToPlace;
     }
     
 }

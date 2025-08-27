@@ -8,11 +8,14 @@ public class PlacementUIController : MonoBehaviour
     private ModeManager modeManager;
     private AttackManager attackManager;
     private UnitMovementManager movementManager;
+    private TurnManager turnManager;
+    private ConfirmationDialogController confirmationDialog;
     
-    // References to the labels
+    // References to the labels and buttons
     private Label unitCountLabel;
     private Label selectedUnitLabel;
     private Label modeLabel;
+    private Button startBattleBtn;
     
     // Track if placement mode has been entered at least once
     private bool hasEnteredPlacementMode = false;
@@ -31,10 +34,11 @@ public class PlacementUIController : MonoBehaviour
         // Get the root element
         VisualElement root = uiDocument.rootVisualElement;
         
-        // Find the labels by their names
+        // Find the labels and buttons by their names
         unitCountLabel = root.Q<Label>("UnitCountLabel");
         selectedUnitLabel = root.Q<Label>("SelectedUnitLabel");
         modeLabel = root.Q<Label>("ModeLabel");
+        startBattleBtn = root.Q<Button>("StartBattleBtn");
 
         
         // Find the unit selector and mode manager
@@ -42,6 +46,8 @@ public class PlacementUIController : MonoBehaviour
         modeManager = FindFirstObjectByType<ModeManager>();
         attackManager = FindFirstObjectByType<AttackManager>();
         movementManager = FindFirstObjectByType<UnitMovementManager>();
+        turnManager = FindFirstObjectByType<TurnManager>();
+        confirmationDialog = FindFirstObjectByType<ConfirmationDialogController>();
         
         if (unitSelector == null)
         {
@@ -53,6 +59,21 @@ public class PlacementUIController : MonoBehaviour
         {
             Debug.LogError("ModeManager not found!");
             return;
+        }
+        
+        // Set up StartBattleBtn click handler
+        if (startBattleBtn != null)
+        {
+            startBattleBtn.clicked += OnStartBattleClicked;
+        }
+        else
+        {
+            Debug.LogWarning("StartBattleBtn not found in UI!");
+        }
+        
+        if (confirmationDialog == null)
+        {
+            Debug.LogWarning("ConfirmationDialogController not found - confirmation dialogs will be disabled!");
         }
         
         UpdateUI();
@@ -110,6 +131,23 @@ public class PlacementUIController : MonoBehaviour
                 unitCountLabel.style.display = DisplayStyle.None;
             }
         }
+        
+        // Update StartBattleBtn visibility and state
+        if (startBattleBtn != null)
+        {
+            if (modeManager.IsInPlacementMode() && modeManager.isBattleMap)
+            {
+                startBattleBtn.style.display = DisplayStyle.Flex;
+                // Enable button only if we have at least 1 unit placed
+                bool hasUnits = unitSelector != null && unitSelector.GetUnitsPlaced() > 0;
+                startBattleBtn.SetEnabled(hasUnits);
+                startBattleBtn.text = hasUnits ? "Start Battle!" : "Place Units First";
+            }
+            else
+            {
+                startBattleBtn.style.display = DisplayStyle.None;
+            }
+        }
     }
     
     public void OnModeChanged(GameMode newMode)
@@ -119,6 +157,89 @@ public class PlacementUIController : MonoBehaviour
             hasEnteredPlacementMode = true;
         }
         UpdateUI();
+    }
+    
+    private void OnStartBattleClicked()
+    {
+        if (modeManager == null || unitSelector == null)
+        {
+            Debug.LogError("ModeManager or UnitSelector not found!");
+            return;
+        }
+        
+        if (unitSelector.GetUnitsPlaced() == 0)
+        {
+            Debug.Log("Cannot start battle - no units placed");
+            return;
+        }
+        
+        int placedUnits = unitSelector.GetUnitsPlaced();
+        int maxUnits = unitSelector.GetMaxUnits();
+        
+        // If all units are placed, start battle immediately
+        if (placedUnits >= maxUnits)
+        {
+            StartBattle();
+        }
+        // If not all units are placed, show confirmation dialog
+        else
+        {
+            if (confirmationDialog != null)
+            {
+                string message = "Are you sure you want to start the battle?";
+                string unitsMessage = $"You have only placed {placedUnits} out of {maxUnits} units.";
+                
+                confirmationDialog.ShowDialog(
+                    message,
+                    unitsMessage,
+                    () => {
+                        Debug.Log("PlacementUIController: Confirm callback triggered!");
+                        StartBattle();
+                    }, // onConfirm
+                    () => {
+                        Debug.Log("PlacementUIController: Cancel callback triggered!");
+                    } // onCancel
+                );
+            }
+            else
+            {
+                // Fallback if no confirmation dialog - start battle directly
+                Debug.LogWarning("No confirmation dialog available - starting battle directly");
+                StartBattle();
+            }
+        }
+    }
+    
+    private void StartBattle()
+    {
+        Debug.Log("PlacementUIController: StartBattle method called!");
+        
+        if (modeManager == null || unitSelector == null)
+        {
+            Debug.LogError("Cannot start battle - missing components!");
+            return;
+        }
+        
+        int placedUnits = unitSelector.GetUnitsPlaced();
+        Debug.Log($"Starting battle with {placedUnits} units placed");
+        
+        // Force complete the initial placement phase (needed for early start)
+        unitSelector.ForceCompleteInitialPlacement();
+        
+        // Switch to explore mode first
+        Debug.Log("Switching to Explore mode...");
+        modeManager.SetMode(GameMode.Explore);
+        
+        // Initialize the combat system
+        if (turnManager != null)
+        {
+            Debug.Log("Calling TurnManager.StartCombatPhase()...");
+            turnManager.StartCombatPhase();
+        }
+        else
+        {
+            Debug.LogWarning("TurnManager not found - combat system may not initialize properly!");
+        }
     }
     
     private string GetCurrentModeDisplayName()

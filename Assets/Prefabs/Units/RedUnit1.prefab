@@ -127,13 +127,51 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterName: EnemyUnit1
+  characterClass: {fileID: 0}
   stats:
     baseMaxHP: 80
     currentHP: 80
     baseAttack: 10
     baseDefense: 5
     baseSpeed: 5
-  hasWarriorClass: 0
+    baseAttackRange: 1
+    baseMaxAP: 2
+    currentAP: 0
+    baseMaxMP: 3
+    currentMP: 0
+  calculatedStats: No class assigned
+  knownSkills:
+  - {fileID: 11400000, guid: 48c37a54d0aaa9c42a9ad3f983c6a48d, type: 2}
+--- !u!114 &1234567890123456789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5726333349782792524}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6070f46a8731f04e99e9ce325ed506d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnitGridInfo
+  playerPrefab: {fileID: 0}
+  activationKey: 112
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  gridLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  obstructionLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  unitHeightOffset: 0
+  exitModeAfterPlacement: 1
+  highlightMaterial: {fileID: 0}
+  validPlacementColor: {r: 0, g: 0, b: 1, a: 1}
+  invalidPlacementColor: {r: 1, g: 0, b: 0, a: 1}
+  gridHighlightPrefab: {fileID: 0}
+  gridManager: {fileID: 0}
 --- !u!1001 &6496870228938539962
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -191,21 +229,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 836f315406350e8448f38d1cc469b120, type: 3}
---- !u!114 &1234567890123456789
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5726333349782792524}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a6070f46a8731f04e99e9ce325ed506d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnitGridInfo
-  gridPosition: {x: 0, y: 0}
-  groundObject: {fileID: 0}
-  placementManager: {fileID: 0}
 --- !u!4 &5949964655222860054 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 629096956391680684, guid: 836f315406350e8448f38d1cc469b120, type: 3}

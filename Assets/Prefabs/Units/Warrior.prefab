@@ -142,6 +142,7 @@ MonoBehaviour:
     currentMP: 3
   calculatedStats: 'HP: 120/120 | ATK: 20 | DEF: 10 | SPD: 4 | RNG: 1'
   knownSkills:
+  - {fileID: 11400000, guid: 48c37a54d0aaa9c42a9ad3f983c6a48d, type: 2}
   - {fileID: 11400000, guid: 5654ec615557cf041b6a488d9ddc398b, type: 2}
 --- !u!1001 &7314227868117074938
 PrefabInstance:

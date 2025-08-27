@@ -1,10 +1,11 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/PlacementUI/placement_ui.uss?fileID=7433441132597879392&amp;guid=5531f95841397b440b5e12037e6adead&amp;type=3#placement_ui" />
     <ui:VisualElement name="Panel" style="flex-grow: 1; align-items: center; background-color: rgba(0, 0, 0, 0);">
-        <ui:VisualElement name="Container" class="container" style="flex-grow: 1; translate: -830px 5px; max-height: 120px; height: 120px; align-items: center; justify-content: center;">
-            <ui:Label text="Label" name="ModeLabel" class="label" />
-            <ui:Label text="Label" name="UnitCountLabel" class="label" />
-            <ui:Label text="Label" name="SelectedUnitLabel" class="label" />
+        <ui:VisualElement name="Container" class="container" style="flex-grow: 1; translate: -830px 5px; max-height: 200px; height: 120px; align-items: center; justify-content: center;">
+            <ui:Label text="Label" name="ModeLabel" class="label" style="font-size: 16px;" />
+            <ui:Label text="Label" name="UnitCountLabel" class="label" style="font-size: 16px;" />
+            <ui:Label text="Label" name="SelectedUnitLabel" class="label" style="font-size: 16px;" />
+            <ui:Button text="Start Battle?" name="StartBattleBtn" class="btn" style="-unity-font-definition: url(&quot;project://database/Assets/UI/Fonts/Texturina-VariableFont_opsz,wght.ttf?fileID=12800000&amp;guid=5a0a396b52ce8a2458a3ab1cf1a9f9d9&amp;type=3#Texturina-VariableFont_opsz,wght&quot;); font-size: 16px; color: rgb(255, 255, 255); border-top-width: 0; border-left-width: 0; border-right-width: 0; border-bottom-width: 0; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; border-left-color: rgba(255, 255, 255, 0); border-right-color: rgba(255, 255, 255, 0); border-top-color: rgba(255, 255, 255, 0); border-bottom-color: rgba(255, 255, 255, 0); background-color: rgba(188, 188, 188, 0);" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
