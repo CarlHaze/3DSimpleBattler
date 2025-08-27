@@ -345,9 +345,23 @@ public class UnitPlacementManager : MonoBehaviour
             SetTileOccupied(groundObj, gridPos, true);
             CreateUnit(gridPos, groundObj);
             
+            // Only exit placement mode automatically if not on a battle map
+            // On battle maps, stay in placement mode until 4 units are placed or StartBattleBtn is clicked
             if (exitModeAfterPlacement && modeManager != null)
             {
-                modeManager.SetMode(GameMode.Explore);
+                if (!modeManager.isBattleMap)
+                {
+                    modeManager.SetMode(GameMode.Explore);
+                }
+                else
+                {
+                    // On battle maps, only exit if we've reached max units
+                    if (unitSelector != null && !unitSelector.CanPlaceMoreUnits())
+                    {
+                        modeManager.SetMode(GameMode.Explore);
+                        SimpleMessageLog.Log("Maximum units placed - switching to Explore mode. Click Start Battle to begin!");
+                    }
+                }
             }
         }
         else

@@ -5,23 +5,30 @@ public class SimpleUnitSelector : MonoBehaviour
 {
     [Header("Unit Selection")]
     public List<GameObject> availableUnits = new List<GameObject>();
-    public int maxUnitsToPlace = 4;
     public KeyCode cycleUnitsKey = KeyCode.Tab;
     
     [Header("Current Selection")]
     public int currentSelectedIndex = 0;
     
     private UnitPlacementManager placementManager;
+    private ModeManager modeManager;
     private int unitsPlaced = 0;
     private bool initialPlacementComplete = false;
     
     void Start()
     {
         placementManager = FindFirstObjectByType<UnitPlacementManager>();
+        modeManager = FindFirstObjectByType<ModeManager>();
         
         if (placementManager == null)
         {
             Debug.LogError("UnitPlacementManager not found!");
+            return;
+        }
+        
+        if (modeManager == null)
+        {
+            Debug.LogError("ModeManager not found!");
             return;
         }
         
@@ -31,7 +38,7 @@ public class SimpleUnitSelector : MonoBehaviour
             UpdateSelectedUnit();
         }
         
-        Debug.Log($"Unit Selector initialized. {availableUnits.Count} units available, max {maxUnitsToPlace} can be placed.");
+        Debug.Log($"Unit Selector initialized. {availableUnits.Count} units available, max {GetMaxUnits()} can be placed.");
     }
     
     void Update()
@@ -62,16 +69,16 @@ public class SimpleUnitSelector : MonoBehaviour
     
     public bool CanPlaceMoreUnits()
     {
-        return unitsPlaced < maxUnitsToPlace;
+        return unitsPlaced < GetMaxUnits();
     }
     
     public void OnUnitPlaced()
     {
         unitsPlaced++;
-        Debug.Log($"Units placed: {unitsPlaced}/{maxUnitsToPlace}");
+        Debug.Log($"Units placed: {unitsPlaced}/{GetMaxUnits()}");
         
         // Mark initial placement as complete when we reach max units for the first time
-        if (unitsPlaced >= maxUnitsToPlace && !initialPlacementComplete)
+        if (unitsPlaced >= GetMaxUnits() && !initialPlacementComplete)
         {
             initialPlacementComplete = true;
             Debug.Log("Initial placement phase complete - actions now available!");
@@ -81,7 +88,7 @@ public class SimpleUnitSelector : MonoBehaviour
     public void OnUnitRemoved()
     {
         unitsPlaced = Mathf.Max(0, unitsPlaced - 1);
-        Debug.Log($"Units placed: {unitsPlaced}/{maxUnitsToPlace}");
+        Debug.Log($"Units placed: {unitsPlaced}/{GetMaxUnits()}");
     }
     
     public string GetCurrentUnitName()
@@ -97,11 +104,17 @@ public class SimpleUnitSelector : MonoBehaviour
     
     public int GetMaxUnits()
     {
-        return maxUnitsToPlace;
+        return modeManager != null ? modeManager.maxUnitsToPlace : 4; // Fallback to 4 if no ModeManager
     }
     
     public bool IsInitialPlacementComplete()
     {
         return initialPlacementComplete;
+    }
+    
+    public void ForceCompleteInitialPlacement()
+    {
+        initialPlacementComplete = true;
+        Debug.Log("Initial placement phase manually completed");
     }
 }

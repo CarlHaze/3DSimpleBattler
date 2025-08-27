@@ -136,8 +136,14 @@ MonoBehaviour:
     baseDefense: 5
     baseSpeed: 5
     baseAttackRange: 1
-  calculatedStats: 'HP: 90/90 | ATK: 30 | DEF: 0 | SPD: 8 | RNG: 4'
-  knownSkills: []
+    baseMaxAP: 2
+    currentAP: 2
+    baseMaxMP: 3
+    currentMP: 3
+  calculatedStats: 'HP: 90/90 | ATK: 30 | DEF: 0 | SPD: 8 | RNG: 3'
+  knownSkills:
+  - {fileID: 11400000, guid: 14056ecf53da5cf4f9a2f3e9579e4b80, type: 2}
+  - {fileID: 11400000, guid: 85487621de83a264c96423278e08a128, type: 2}
 --- !u!1001 &4105205073083086008
 PrefabInstance:
   m_ObjectHideFlags: 0

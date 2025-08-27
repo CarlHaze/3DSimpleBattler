@@ -2012,7 +2012,6 @@ MonoBehaviour:
   - {fileID: 1684369036123604669, guid: b8b353bc24e0a674aa1734823b334fed, type: 3}
   - {fileID: 1684369036123604669, guid: 6368ff0c6f9db624f9a3997100bfd824, type: 3}
   - {fileID: 1684369036123604669, guid: 03f4890cac6f2ef4dbb072a58cd84e08, type: 3}
-  maxUnitsToPlace: 4
   cycleUnitsKey: 9
   currentSelectedIndex: 0
 --- !u!4 &1667105152
@@ -2457,6 +2456,7 @@ MonoBehaviour:
   placementToggleKey: 112
   isBattleMap: 1
   inBattle: 0
+  maxUnitsToPlace: 4
 --- !u!4 &1979144678
 Transform:
   m_ObjectHideFlags: 0
