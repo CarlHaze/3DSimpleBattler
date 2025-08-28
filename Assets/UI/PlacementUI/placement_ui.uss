@@ -36,8 +36,7 @@
 }
 
 .btn:hover {
-    
-    font-size: 19px;
-    color: #00CDFF;
+    font-size: 19px !important;
+    color: #00CDFF !important;
 }
 

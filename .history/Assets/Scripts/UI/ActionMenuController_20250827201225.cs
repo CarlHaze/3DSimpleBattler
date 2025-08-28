@@ -7,6 +7,7 @@ public class ActionMenuController : MonoBehaviour
     private VisualElement panel;
     private Button moveButton;
     private Button attackButton;
+    private Button cancelButton;
     private Button endButton;
     
     private UnitMovementManager movementManager;
@@ -66,6 +67,7 @@ public class ActionMenuController : MonoBehaviour
         panel = root.Q<VisualElement>("Panel");
         moveButton = root.Q<Button>("MoveButton");
         attackButton = root.Q<Button>("ATTButton");
+        cancelButton = root.Q<Button>("CancelButton");
         endButton = root.Q<Button>("EndButton");
         
         if (panel == null)
@@ -86,6 +88,12 @@ public class ActionMenuController : MonoBehaviour
             return;
         }
         
+        if (cancelButton == null)
+        {
+            Debug.LogError("CancelButton not found!");
+            return;
+        }
+        
         if (endButton == null)
         {
             Debug.LogError("EndButton not found!");
@@ -95,6 +103,7 @@ public class ActionMenuController : MonoBehaviour
         // Set up button callbacks
         moveButton.clicked += OnMoveButtonPressed;
         attackButton.clicked += OnAttackButtonPressed;
+        cancelButton.clicked += OnCancelButtonPressed;
         endButton.clicked += OnEndTurnButtonPressed;
         
         // Hide menu initially
@@ -385,6 +394,19 @@ public class ActionMenuController : MonoBehaviour
                 attackManager.StartAttackMode(selectedUnit);
             }
             HideActionMenu();
+        }
+    }
+    
+    void OnCancelButtonPressed()
+    {
+        Debug.Log("Cancel button pressed");
+        
+        // Deselect unit and return to explore mode
+        DeselectUnit();
+        
+        if (modeManager != null)
+        {
+            modeManager.SetMode(GameMode.Explore);
         }
     }
     

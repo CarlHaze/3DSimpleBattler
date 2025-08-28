@@ -89,6 +89,22 @@ public class PlacementUIController : MonoBehaviour
     {
         if (unitSelector == null || modeManager == null) return;
 
+        // Hide entire UI if placement is complete and we're not in placement mode
+        bool placementComplete = unitSelector.IsInitialPlacementComplete();
+        bool showPlacementUI = modeManager.IsInPlacementMode() || !placementComplete;
+        
+        // Get the root container to hide/show the entire UI
+        VisualElement root = uiDocument.rootVisualElement;
+        VisualElement container = root.Q<VisualElement>("Container");
+        
+        if (container != null)
+        {
+            container.style.display = showPlacementUI ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+        
+        // If UI is hidden, no need to update individual elements
+        if (!showPlacementUI) return;
+
         // Update mode label with dynamic state checking
         if (modeLabel != null)
         {
