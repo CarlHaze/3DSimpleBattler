@@ -186,14 +186,31 @@ public class UnitMovementManager : MonoBehaviour
         validMovePositions.Clear();
     }
     
+    int GetCurrentMovementRange()
+    {
+        if (selectedUnit == null) return movementRange; // Fallback to default
+        
+        Character character = selectedUnit.GetComponent<Character>();
+        if (character?.Stats != null)
+        {
+            // Use the unit's current MP as the movement range
+            return character.Stats.CurrentMP;
+        }
+        
+        return movementRange; // Fallback to default if no character stats
+    }
+    
     void ShowMovementRange(Vector2Int unitPosition, GameObject groundObject)
     {
         validMovePositions.Clear();
         
+        // Get current movement range from unit's remaining MP
+        int currentMovementRange = GetCurrentMovementRange();
+        
         // Use pathfinder to get reachable positions if available
         if (pathfinder != null)
         {
-            List<Vector2Int> reachablePositions = pathfinder.GetReachablePositions(unitPosition, groundObject, movementRange);
+            List<Vector2Int> reachablePositions = pathfinder.GetReachablePositions(unitPosition, groundObject, currentMovementRange);
             
             foreach (Vector2Int pos in reachablePositions)
             {
@@ -205,21 +222,21 @@ public class UnitMovementManager : MonoBehaviour
             }
             
             // Also show some blocked positions for visual feedback
-            ShowBlockedPositions(unitPosition, groundObject);
+            ShowBlockedPositions(unitPosition, groundObject, currentMovementRange);
         }
         else
         {
             // Fallback to old grid-based method
-            for (int x = -movementRange; x <= movementRange; x++)
+            for (int x = -currentMovementRange; x <= currentMovementRange; x++)
             {
-                for (int z = -movementRange; z <= movementRange; z++)
+                for (int z = -currentMovementRange; z <= currentMovementRange; z++)
                 {
                     // Skip the unit's current position
                     if (x == 0 && z == 0) continue;
                     
                     // Use Manhattan distance for movement range
                     int distance = Mathf.Abs(x) + Mathf.Abs(z);
-                    if (distance > movementRange) continue;
+                    if (distance > currentMovementRange) continue;
                     
                     Vector2Int checkPos = unitPosition + new Vector2Int(x, z);
                     
@@ -239,19 +256,19 @@ public class UnitMovementManager : MonoBehaviour
         }
     }
     
-    void ShowBlockedPositions(Vector2Int unitPosition, GameObject groundObject)
+    void ShowBlockedPositions(Vector2Int unitPosition, GameObject groundObject, int currentMovementRange)
     {
         // Show some blocked positions within range for visual context
-        for (int x = -movementRange; x <= movementRange; x++)
+        for (int x = -currentMovementRange; x <= currentMovementRange; x++)
         {
-            for (int z = -movementRange; z <= movementRange; z++)
+            for (int z = -currentMovementRange; z <= currentMovementRange; z++)
             {
                 // Skip the unit's current position
                 if (x == 0 && z == 0) continue;
                 
                 // Use Manhattan distance for movement range
                 int distance = Mathf.Abs(x) + Mathf.Abs(z);
-                if (distance > movementRange) continue;
+                if (distance > currentMovementRange) continue;
                 
                 Vector2Int checkPos = unitPosition + new Vector2Int(x, z);
                 
@@ -686,16 +703,29 @@ public class UnitMovementManager : MonoBehaviour
         placementManager.SetTileOccupied(currentGroundObject, targetGridPos, true, selectedUnit);
         
         
-        // Clear movement mode and highlights after successful move
-        ExitMovementMode();
+        // Check if unit still has MP for more movement
+        bool canMoveMore = character?.Stats != null && character.Stats.CurrentMP > 0;
         
-        // Keep unit selected and show action menu after movement for player units
-        TurnManager turnManager = FindFirstObjectByType<TurnManager>();
-        if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat && 
-            turnManager.IsPlayerTurn() && selectedUnit == turnManager.GetCurrentUnit())
+        if (canMoveMore)
         {
-            // Re-select the unit to show the action menu after a small delay
-            Invoke(nameof(ReselectUnitAfterMove), 0.1f);
+            // Refresh movement range with updated MP instead of exiting
+            ClearMovementHighlights();
+            ShowMovementRange(targetGridPos, currentGroundObject);
+            SimpleMessageLog.Log($"{character.CharacterName} has {character.Stats.CurrentMP} MP remaining");
+        }
+        else
+        {
+            // No MP left, exit movement mode
+            ExitMovementMode();
+            
+            // Keep unit selected and show action menu after movement for player units
+            TurnManager turnManager = FindFirstObjectByType<TurnManager>();
+            if (turnManager != null && turnManager.GetCurrentPhase() == BattlePhase.Combat && 
+                turnManager.IsPlayerTurn() && selectedUnit == turnManager.GetCurrentUnit())
+            {
+                // Re-select the unit to show the action menu after a small delay
+                Invoke(nameof(ReselectUnitAfterMove), 0.1f);
+            }
         }
     }
     
@@ -974,5 +1004,19 @@ public class UnitMovementManager : MonoBehaviour
     public bool IsInMovementMode()
     {
         return inMovementMode;
+    }
+    
+    // Method to refresh movement range display with current MP
+    public void RefreshMovementRange()
+    {
+        if (selectedUnit != null && inMovementMode)
+        {
+            UnitGridInfo unitInfo = selectedUnit.GetComponent<UnitGridInfo>();
+            if (unitInfo != null)
+            {
+                ClearMovementHighlights();
+                ShowMovementRange(unitInfo.gridPosition, unitInfo.groundObject);
+            }
+        }
     }
 }

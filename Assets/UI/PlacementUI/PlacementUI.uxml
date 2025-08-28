@@ -5,7 +5,7 @@
             <ui:Label text="Label" name="ModeLabel" class="label" style="font-size: 16px;" />
             <ui:Label text="Label" name="UnitCountLabel" class="label" style="font-size: 16px;" />
             <ui:Label text="Label" name="SelectedUnitLabel" class="label" style="font-size: 16px;" />
-            <ui:Button text="Start Battle?" name="StartBattleBtn" class="btn" style="-unity-font-definition: url(&quot;project://database/Assets/UI/Fonts/Texturina-VariableFont_opsz,wght.ttf?fileID=12800000&amp;guid=5a0a396b52ce8a2458a3ab1cf1a9f9d9&amp;type=3#Texturina-VariableFont_opsz,wght&quot;); font-size: 16px; color: rgb(255, 255, 255); border-top-width: 0; border-left-width: 0; border-right-width: 0; border-bottom-width: 0; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; border-left-color: rgba(255, 255, 255, 0); border-right-color: rgba(255, 255, 255, 0); border-top-color: rgba(255, 255, 255, 0); border-bottom-color: rgba(255, 255, 255, 0); background-color: rgba(188, 188, 188, 0);" />
+            <ui:Button text="Button" name="StartBattleBtn" style="border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; -unity-background-scale-mode: stretch-to-fill; align-self: stretch;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
